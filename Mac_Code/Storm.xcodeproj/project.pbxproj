@@ -1,0 +1,320 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7D09B97C13F0701500468E96 /* INXM_IndexManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D09B97B13F0701500468E96 /* INXM_IndexManager.cpp */; };
+		7D09B98913F071D700468E96 /* INXM_IndexHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D09B98813F071D700468E96 /* INXM_IndexHandle.cpp */; };
+		7D09B99613F0758700468E96 /* INXM_IndexScan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D09B99513F0758700468E96 /* INXM_IndexScan.cpp */; };
+		7D881C42133F8E4200F0702E /* REM_RecordFileManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D881C41133F8E4200F0702E /* REM_RecordFileManager.cpp */; };
+		7D881C56133FA48700F0702E /* REM_RecordFileHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D881C55133FA48700F0702E /* REM_RecordFileHandle.cpp */; };
+		7D881C5F133FA57E00F0702E /* REM_RecordHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D881C5E133FA57E00F0702E /* REM_RecordHandle.cpp */; };
+		7D881C6A133FAAEE00F0702E /* REM_RecordFileScan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D881C69133FAAEE00F0702E /* REM_RecordFileScan.cpp */; };
+		7D881C79133FAC2400F0702E /* REM_RecordID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D881C78133FAC2400F0702E /* REM_RecordID.cpp */; };
+		7DD2CACB1328335400332DF8 /* retcodes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD2CAB91328335400332DF8 /* retcodes.cpp */; };
+		7DD2CACC1328335400332DF8 /* STORM_BufferManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD2CABB1328335400332DF8 /* STORM_BufferManager.cpp */; };
+		7DD2CACD1328335400332DF8 /* STORM_FileHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD2CABD1328335400332DF8 /* STORM_FileHandle.cpp */; };
+		7DD2CACE1328335400332DF8 /* STORM_Frame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD2CABF1328335400332DF8 /* STORM_Frame.cpp */; };
+		7DD2CACF1328335400332DF8 /* STORM_PageHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD2CAC11328335400332DF8 /* STORM_PageHandle.cpp */; };
+		7DD2CAD01328335400332DF8 /* STORM_StorageManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD2CAC41328335400332DF8 /* STORM_StorageManager.cpp */; };
+		7DD2CAD11328335400332DF8 /* UTILS_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7DD2CAC91328335400332DF8 /* UTILS_misc.cpp */; };
+		8DD76F650486A84900D96B5E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* main.cpp */; settings = {ATTRIBUTES = (); }; };
+		8DD76F6A0486A84900D96B5E /* Storm.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = C6859E8B029090EE04C91782 /* Storm.1 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DD76F690486A84900D96B5E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				8DD76F6A0486A84900D96B5E /* Storm.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		08FB7796FE84155DC02AAC07 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		7D09B97913F06FD400468E96 /* INXM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INXM.h; sourceTree = "<group>"; };
+		7D09B97A13F0701500468E96 /* INXM_IndexManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INXM_IndexManager.h; sourceTree = "<group>"; };
+		7D09B97B13F0701500468E96 /* INXM_IndexManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = INXM_IndexManager.cpp; sourceTree = "<group>"; };
+		7D09B98313F0715D00468E96 /* components.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = components.h; sourceTree = "<group>"; };
+		7D09B98713F071D700468E96 /* INXM_IndexHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INXM_IndexHandle.h; sourceTree = "<group>"; };
+		7D09B98813F071D700468E96 /* INXM_IndexHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = INXM_IndexHandle.cpp; sourceTree = "<group>"; };
+		7D09B99413F0758700468E96 /* INXM_IndexScan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INXM_IndexScan.h; sourceTree = "<group>"; };
+		7D09B99513F0758700468E96 /* INXM_IndexScan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = INXM_IndexScan.cpp; sourceTree = "<group>"; };
+		7D09B9B713F0A9D600468E96 /* INXM_Components.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INXM_Components.h; sourceTree = "<group>"; };
+		7D881C3D133F8CB300F0702E /* REM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REM.h; sourceTree = "<group>"; };
+		7D881C40133F8E4200F0702E /* REM_RecordFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REM_RecordFileManager.h; sourceTree = "<group>"; };
+		7D881C41133F8E4200F0702E /* REM_RecordFileManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = REM_RecordFileManager.cpp; sourceTree = "<group>"; };
+		7D881C54133FA48700F0702E /* REM_RecordFileHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REM_RecordFileHandle.h; sourceTree = "<group>"; };
+		7D881C55133FA48700F0702E /* REM_RecordFileHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = REM_RecordFileHandle.cpp; sourceTree = "<group>"; };
+		7D881C5D133FA57E00F0702E /* REM_RecordHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REM_RecordHandle.h; sourceTree = "<group>"; };
+		7D881C5E133FA57E00F0702E /* REM_RecordHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = REM_RecordHandle.cpp; sourceTree = "<group>"; };
+		7D881C68133FAAEE00F0702E /* REM_RecordFileScan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REM_RecordFileScan.h; sourceTree = "<group>"; };
+		7D881C69133FAAEE00F0702E /* REM_RecordFileScan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = REM_RecordFileScan.cpp; sourceTree = "<group>"; };
+		7D881C77133FAC2400F0702E /* REM_RecordID.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REM_RecordID.h; sourceTree = "<group>"; };
+		7D881C78133FAC2400F0702E /* REM_RecordID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = REM_RecordID.cpp; sourceTree = "<group>"; };
+		7D881CAC133FAEB300F0702E /* REM_Components.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REM_Components.h; sourceTree = "<group>"; };
+		7DD2CAB91328335400332DF8 /* retcodes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = retcodes.cpp; sourceTree = "<group>"; };
+		7DD2CABA1328335400332DF8 /* retcodes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = retcodes.h; sourceTree = "<group>"; };
+		7DD2CABB1328335400332DF8 /* STORM_BufferManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STORM_BufferManager.cpp; sourceTree = "<group>"; };
+		7DD2CABC1328335400332DF8 /* STORM_BufferManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STORM_BufferManager.h; sourceTree = "<group>"; };
+		7DD2CABD1328335400332DF8 /* STORM_FileHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STORM_FileHandle.cpp; sourceTree = "<group>"; };
+		7DD2CABE1328335400332DF8 /* STORM_FileHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STORM_FileHandle.h; sourceTree = "<group>"; };
+		7DD2CABF1328335400332DF8 /* STORM_Frame.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STORM_Frame.cpp; sourceTree = "<group>"; };
+		7DD2CAC01328335400332DF8 /* STORM_Frame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STORM_Frame.h; sourceTree = "<group>"; };
+		7DD2CAC11328335400332DF8 /* STORM_PageHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STORM_PageHandle.cpp; sourceTree = "<group>"; };
+		7DD2CAC21328335400332DF8 /* STORM_PageHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STORM_PageHandle.h; sourceTree = "<group>"; };
+		7DD2CAC31328335400332DF8 /* STORM_Parameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STORM_Parameters.h; sourceTree = "<group>"; };
+		7DD2CAC41328335400332DF8 /* STORM_StorageManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STORM_StorageManager.cpp; sourceTree = "<group>"; };
+		7DD2CAC51328335400332DF8 /* STORM_StorageManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STORM_StorageManager.h; sourceTree = "<group>"; };
+		7DD2CAC61328335400332DF8 /* STORM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STORM.h; sourceTree = "<group>"; };
+		7DD2CAC71328335400332DF8 /* UTILS_hashmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UTILS_hashmap.h; sourceTree = "<group>"; };
+		7DD2CAC81328335400332DF8 /* UTILS_hashtable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UTILS_hashtable.h; sourceTree = "<group>"; };
+		7DD2CAC91328335400332DF8 /* UTILS_misc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UTILS_misc.cpp; sourceTree = "<group>"; };
+		7DD2CACA1328335400332DF8 /* UTILS_misc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UTILS_misc.h; sourceTree = "<group>"; };
+		8DD76F6C0486A84900D96B5E /* Storm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Storm; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6859E8B029090EE04C91782 /* Storm.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Storm.1; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DD76F660486A84900D96B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08FB7794FE84155DC02AAC07 /* Storm */ = {
+			isa = PBXGroup;
+			children = (
+				08FB7795FE84155DC02AAC07 /* Source */,
+				C6859E8C029090F304C91782 /* Documentation */,
+				1AB674ADFE9D54B511CA2CBB /* Products */,
+			);
+			name = Storm;
+			sourceTree = "<group>";
+		};
+		08FB7795FE84155DC02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				08FB7796FE84155DC02AAC07 /* main.cpp */,
+				7D09B98313F0715D00468E96 /* components.h */,
+				7DD2CABA1328335400332DF8 /* retcodes.h */,
+				7DD2CAB91328335400332DF8 /* retcodes.cpp */,
+				7DD2CABB1328335400332DF8 /* STORM_BufferManager.cpp */,
+				7DD2CABC1328335400332DF8 /* STORM_BufferManager.h */,
+				7DD2CABD1328335400332DF8 /* STORM_FileHandle.cpp */,
+				7DD2CABE1328335400332DF8 /* STORM_FileHandle.h */,
+				7DD2CABF1328335400332DF8 /* STORM_Frame.cpp */,
+				7DD2CAC01328335400332DF8 /* STORM_Frame.h */,
+				7DD2CAC11328335400332DF8 /* STORM_PageHandle.cpp */,
+				7DD2CAC21328335400332DF8 /* STORM_PageHandle.h */,
+				7DD2CAC31328335400332DF8 /* STORM_Parameters.h */,
+				7DD2CAC41328335400332DF8 /* STORM_StorageManager.cpp */,
+				7DD2CAC51328335400332DF8 /* STORM_StorageManager.h */,
+				7DD2CAC61328335400332DF8 /* STORM.h */,
+				7D881C3D133F8CB300F0702E /* REM.h */,
+				7D881CAC133FAEB300F0702E /* REM_Components.h */,
+				7D881C40133F8E4200F0702E /* REM_RecordFileManager.h */,
+				7D881C41133F8E4200F0702E /* REM_RecordFileManager.cpp */,
+				7D881C54133FA48700F0702E /* REM_RecordFileHandle.h */,
+				7D881C55133FA48700F0702E /* REM_RecordFileHandle.cpp */,
+				7D881C5D133FA57E00F0702E /* REM_RecordHandle.h */,
+				7D881C5E133FA57E00F0702E /* REM_RecordHandle.cpp */,
+				7D881C68133FAAEE00F0702E /* REM_RecordFileScan.h */,
+				7D881C69133FAAEE00F0702E /* REM_RecordFileScan.cpp */,
+				7D881C77133FAC2400F0702E /* REM_RecordID.h */,
+				7D881C78133FAC2400F0702E /* REM_RecordID.cpp */,
+				7DD2CAC71328335400332DF8 /* UTILS_hashmap.h */,
+				7DD2CAC81328335400332DF8 /* UTILS_hashtable.h */,
+				7DD2CAC91328335400332DF8 /* UTILS_misc.cpp */,
+				7DD2CACA1328335400332DF8 /* UTILS_misc.h */,
+				7D09B97913F06FD400468E96 /* INXM.h */,
+				7D09B9B713F0A9D600468E96 /* INXM_Components.h */,
+				7D09B97A13F0701500468E96 /* INXM_IndexManager.h */,
+				7D09B97B13F0701500468E96 /* INXM_IndexManager.cpp */,
+				7D09B98713F071D700468E96 /* INXM_IndexHandle.h */,
+				7D09B98813F071D700468E96 /* INXM_IndexHandle.cpp */,
+				7D09B99413F0758700468E96 /* INXM_IndexScan.h */,
+				7D09B99513F0758700468E96 /* INXM_IndexScan.cpp */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1AB674ADFE9D54B511CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DD76F6C0486A84900D96B5E /* Storm */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C6859E8C029090F304C91782 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				C6859E8B029090EE04C91782 /* Storm.1 */,
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DD76F620486A84900D96B5E /* Storm */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "Storm" */;
+			buildPhases = (
+				8DD76F640486A84900D96B5E /* Sources */,
+				8DD76F660486A84900D96B5E /* Frameworks */,
+				8DD76F690486A84900D96B5E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Storm;
+			productInstallPath = "$(HOME)/bin";
+			productName = Storm;
+			productReference = 8DD76F6C0486A84900D96B5E /* Storm */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0430;
+			};
+			buildConfigurationList = 1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "Storm" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 08FB7794FE84155DC02AAC07 /* Storm */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DD76F620486A84900D96B5E /* Storm */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DD76F640486A84900D96B5E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8DD76F650486A84900D96B5E /* main.cpp in Sources */,
+				7DD2CACB1328335400332DF8 /* retcodes.cpp in Sources */,
+				7DD2CACC1328335400332DF8 /* STORM_BufferManager.cpp in Sources */,
+				7DD2CACD1328335400332DF8 /* STORM_FileHandle.cpp in Sources */,
+				7DD2CACE1328335400332DF8 /* STORM_Frame.cpp in Sources */,
+				7DD2CACF1328335400332DF8 /* STORM_PageHandle.cpp in Sources */,
+				7DD2CAD01328335400332DF8 /* STORM_StorageManager.cpp in Sources */,
+				7DD2CAD11328335400332DF8 /* UTILS_misc.cpp in Sources */,
+				7D881C42133F8E4200F0702E /* REM_RecordFileManager.cpp in Sources */,
+				7D881C56133FA48700F0702E /* REM_RecordFileHandle.cpp in Sources */,
+				7D881C5F133FA57E00F0702E /* REM_RecordHandle.cpp in Sources */,
+				7D881C6A133FAAEE00F0702E /* REM_RecordFileScan.cpp in Sources */,
+				7D881C79133FAC2400F0702E /* REM_RecordID.cpp in Sources */,
+				7D09B97C13F0701500468E96 /* INXM_IndexManager.cpp in Sources */,
+				7D09B98913F071D700468E96 /* INXM_IndexHandle.cpp in Sources */,
+				7D09B99613F0758700468E96 /* INXM_IndexScan.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB923208733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/bin;
+				OTHER_CFLAGS = "";
+				PRODUCT_NAME = Storm;
+			};
+			name = Debug;
+		};
+		1DEB923308733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = Storm;
+			};
+			name = Release;
+		};
+		1DEB923608733DC60010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_VERSION = "";
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		1DEB923708733DC60010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB923108733DC60010E9CD /* Build configuration list for PBXNativeTarget "Storm" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923208733DC60010E9CD /* Debug */,
+				1DEB923308733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB923508733DC60010E9CD /* Build configuration list for PBXProject "Storm" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB923608733DC60010E9CD /* Debug */,
+				1DEB923708733DC60010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
