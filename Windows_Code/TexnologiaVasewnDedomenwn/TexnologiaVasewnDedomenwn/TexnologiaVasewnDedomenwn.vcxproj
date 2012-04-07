@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E5825FB9-D60B-4253-92D5-9199213ED25B}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>TexnologiaVasewnDedomenwn</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="components.h" />
+    <ClInclude Include="INXM.h" />
+    <ClInclude Include="INXM_Components.h" />
+    <ClInclude Include="INXM_IndexHandle.h" />
+    <ClInclude Include="INXM_IndexManager.h" />
+    <ClInclude Include="INXM_IndexScan.h" />
+    <ClInclude Include="REM.h" />
+    <ClInclude Include="REM_Components.h" />
+    <ClInclude Include="REM_RecordFileHandle.h" />
+    <ClInclude Include="REM_RecordFileManager.h" />
+    <ClInclude Include="REM_RecordFileScan.h" />
+    <ClInclude Include="REM_RecordHandle.h" />
+    <ClInclude Include="REM_RecordID.h" />
+    <ClInclude Include="retcodes.h" />
+    <ClInclude Include="SSQLM.h" />
+    <ClInclude Include="SSQLM_DDL_Manager.h" />
+    <ClInclude Include="SSQLM_DML_Manager.h" />
+    <ClInclude Include="STORM.h" />
+    <ClInclude Include="STORM_BufferManager.h" />
+    <ClInclude Include="STORM_FileHandle.h" />
+    <ClInclude Include="STORM_Frame.h" />
+    <ClInclude Include="STORM_PageHandle.h" />
+    <ClInclude Include="STORM_Parameters.h" />
+    <ClInclude Include="STORM_StorageManager.h" />
+    <ClInclude Include="SYSM.h" />
+    <ClInclude Include="SYSM_DatabaseManager.h" />
+    <ClInclude Include="SYSM_Metadata.h" />
+    <ClInclude Include="SYSM_MetadataManager.h" />
+    <ClInclude Include="UTILS_hashmap.h" />
+    <ClInclude Include="UTILS_hashtable.h" />
+    <ClInclude Include="UTILS_misc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="INXM_IndexHandle.cpp" />
+    <ClCompile Include="INXM_IndexManager.cpp" />
+    <ClCompile Include="INXM_IndexScan.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="REM_RecordFileHandle.cpp" />
+    <ClCompile Include="REM_RecordFileManager.cpp" />
+    <ClCompile Include="REM_RecordFileScan.cpp" />
+    <ClCompile Include="REM_RecordHandle.cpp" />
+    <ClCompile Include="REM_RecordID.cpp" />
+    <ClCompile Include="retcodes.cpp" />
+    <ClCompile Include="SSQLM_DDL_Manager.cpp" />
+    <ClCompile Include="STORM_BufferManager.cpp" />
+    <ClCompile Include="STORM_FileHandle.cpp" />
+    <ClCompile Include="STORM_Frame.cpp" />
+    <ClCompile Include="STORM_PageHandle.cpp" />
+    <ClCompile Include="STORM_StorageManager.cpp" />
+    <ClCompile Include="SYSM_DatabaseManager.cpp" />
+    <ClCompile Include="SYSM_MetadataManager.cpp" />
+    <ClCompile Include="UTILS_misc.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
