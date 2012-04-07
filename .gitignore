@@ -7,3 +7,6 @@
 build/
 DerivedData/
 .DS_Store
+Debug/
+TexnologiaVasewnDedomenwn/Debug
+ipch/
