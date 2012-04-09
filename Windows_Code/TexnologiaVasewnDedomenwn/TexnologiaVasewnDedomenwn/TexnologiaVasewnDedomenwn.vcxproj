@@ -118,6 +118,7 @@
     <ClCompile Include="REM_RecordID.cpp" />
     <ClCompile Include="retcodes.cpp" />
     <ClCompile Include="SSQLM_DDL_Manager.cpp" />
+    <ClCompile Include="SSQLM_DML_Manager.cpp" />
     <ClCompile Include="STORM_BufferManager.cpp" />
     <ClCompile Include="STORM_FileHandle.cpp" />
     <ClCompile Include="STORM_Frame.cpp" />

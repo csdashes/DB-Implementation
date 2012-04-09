@@ -167,5 +167,8 @@
     <ClCompile Include="SSQLM_DDL_Manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SSQLM_DML_Manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

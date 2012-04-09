@@ -392,7 +392,6 @@ void testSSQLM() {
 	rc = ddlm->CreateIndex(dbName,"table1","age");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	
 	// Drop table
 //	rc = ddlm->DropTable(dbName,"table1");
 //	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
@@ -400,6 +399,15 @@ void testSSQLM() {
 	// Drop index
 //	rc = ddlm->DropIndex(dbName,"table1",1);
 //	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	//test DML part
+
+	SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm,im);
+
+	dmlm->Insert("testingDB","table1","5ILIAS22");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+
 }
 
 int main()	{
