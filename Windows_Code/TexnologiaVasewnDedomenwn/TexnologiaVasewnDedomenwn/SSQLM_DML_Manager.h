@@ -12,8 +12,7 @@ private:
 	REM_RecordFileManager *rfm;
 	INXM_IndexManager *im;
 
-	t_rc GetIndexID(REM_RecordHandle *rh, int &indexNo);
-
+	t_rc GetAttrInfo(char *rec, int &offset, char *type, int &size, int &indexID);	//Retrieve attribute info
 public:
 
 	SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im);

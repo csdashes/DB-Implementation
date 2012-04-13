@@ -14,7 +14,7 @@ t_rc SSQLM_DML_Manager::Insert(const char *dbName, const char *tName,const char 
 	REM_RecordFileHandle *rfh = new REM_RecordFileHandle();
 	REM_RecordID rid;
 	char *tokens;
-
+	
 	// Open the table file
 	_snprintf(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 	t_rc rc = rfm->OpenRecordFile(pathname,*rfh);
@@ -77,34 +77,65 @@ t_rc SSQLM_DML_Manager::Insert(const char *dbName, const char *tName,const char 
 		rc = rfs->OpenRecordScan(*rfh,TYPE_STRING,tNameLength, 0, EQ_OP, (char*)tName);
 		if (rc != OK) {return rc; }
 
-		int indexNo;
-		while( rfs->GetNextRecord(rh) != STORM_EOF ){
+		int offset = 0;
+		int size = 0;
+		char type[12];
+		int indexNo = 0;
+		while( rfs->GetNextRecord(rh) != REM_FSEOF ){
+		
+			char*pp;
+			rh.GetData(pp);
 
-			//Get the index id
-			rc = GetIndexID(&rh,indexNo);
+			printf("%s\n",pp);
+			//Get the index id, offset, type and size of the attribute
+			rc = GetAttrInfo(pp,offset,type,size,indexNo);	//6 because we want the 6th token
 
-			// Insert the entry into index file with id = indexNo
-			INXM_IndexHandle ih;
-			_snprintf(pathname,sizeof(pathname),"%s/%s",dbName,tName);
+			//if there is index for this attribute
+			if( indexNo != -1 ){
 
-			rc = im->OpenIndex(pathname,indexNo,ih);
-			if (rc != OK) { return rc; }
+				// Retrieve the index entry from the attribute data
+				INXM_IndexHandle ih;
+				_snprintf(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 
-			ih.InsertEntry( (char*)record, rid);
-			if (rc != OK) { return rc; }
+				char *indexEntry;
+				indexEntry = (char*)malloc(size);
 
-			rc = im->CloseIndex(ih);
-			if (rc != OK) { return rc; }
+				int j;
+				for( j=0; j<size; j++){
+					indexEntry[j] = record[j+offset];
+				}
+				indexEntry[j] = '\0';
+				rc = im->OpenIndex(pathname,indexNo,ih);
+				if (rc != OK) { return rc; }
 
+			
+				// Insert the entry into index file with id = indexNo
+				if(strcmp(type,"TYPE_INT") == 0){
+					int coca = atoi(indexEntry);
+					int *key = new int(coca);
+
+					ih.InsertEntry( key, rid);
+					if (rc != OK) { return rc; }
+				}
+				else{
+					ih.InsertEntry( indexEntry, rid);
+					if (rc != OK) { return rc; }
+				}
+
+				rc = im->CloseIndex(ih);
+				if (rc != OK) { return rc; }
+
+			}
 		}
 
 		rc = rfs->CloseRecordScan();
 	}	
-
+	
+	
 	return OK;
 }
 
-t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, const char *attrName, t_compOp compOp, void *value, REM_RecordID *ridsArray){
+/*t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, const char *attrName, t_compOp compOp, void *value, REM_RecordID *ridsArray){
 
 	
 	char pathname[50];
@@ -138,13 +169,13 @@ t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, const char 
 
 	int indexNo;
 	//Get the index id
-	rc = GetIndexID(&rh,indexNo);
+	rc = GetAttrInfo(rh,indexNo,6);	// 6 is the position of the index field
 	if (rc != OK) {return rc; }
 
 	rc = rfs->CloseRecordScan();
 	if (rc != OK) {return rc; }
 
-	if(indexNo != 0){	//IN CASE OF INDEX
+	if(indexNo != -1){	//IN CASE OF INDEX
 		// Open index file
 		INXM_IndexHandle ih;
 		_snprintf(pathname,sizeof(pathname),"%s/%s",dbName,tName);
@@ -181,27 +212,30 @@ t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, const char 
 		if (rc != OK) {return rc; }
 	}
 	return OK;
-}
+}*/
 
 
 //PRIVATE FUNCTIONS
-t_rc SSQLM_DML_Manager::GetIndexID(REM_RecordHandle *rh, int &indexNo){
-	
-	char *pData;
+t_rc SSQLM_DML_Manager::GetAttrInfo(char *rec, int &offset, char *type, int &size, int &indexID){
+
 	char *tokens;
 	int i = 1;
-	t_rc rc = rh->GetData(pData);
-	if (rc != OK) {return rc; }
-
-	tokens = strtok (pData,";");					//split the recordData
-	indexNo = 0;
+	
+	tokens = strtok (rec,";");					//split the recordData
 
 	// Retrieve the index id
 	while (tokens != NULL){
-		if( i == 6 ){
-			if( strcmp(tokens,"-1") != 0 )
-				indexNo = atoi(tokens);
-			break;
+		if( i == 3 ){
+			offset = atoi(tokens);
+		}
+		else if( i == 4 ){
+			strcpy(type,tokens);
+		}
+		else if( i == 5 ){
+			size = atoi(tokens);
+		}
+		else if( i == 6 ){
+			indexID = atoi(tokens);
 		}
 		i++;
 		tokens = strtok (NULL, ";");

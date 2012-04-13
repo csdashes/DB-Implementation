@@ -42,7 +42,7 @@ t_rc SSQLM_DDL_Manager::CreateTable(char *dbName, const char *tName, const char 
 	char *char_token;
 	char *attrName;
 	char buffer[5];
-	char attr_string[256];
+	char attr_string[200];
 	while (tokens != NULL)
 	 {
 		 if(strcmp(tokens,"INT") == 0){

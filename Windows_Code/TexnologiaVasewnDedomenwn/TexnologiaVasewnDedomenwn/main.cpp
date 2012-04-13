@@ -386,8 +386,8 @@ void testSSQLM() {
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	// Create index
-	rc = ddlm->CreateIndex(dbName,"table1","name");
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+//	rc = ddlm->CreateIndex(dbName,"table1","name");
+//	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	rc = ddlm->CreateIndex(dbName,"table1","age");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
@@ -403,11 +403,37 @@ void testSSQLM() {
 	//test DML part
 
 	SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm,im);
+	char record[24];
 
-	dmlm->Insert("testingDB","table1","5ILIAS22");
+	record[0] = '1';
+	record[1] = '_';
+	record[2] = '_';
+	record[3] = '_';
+	record[4] = 'T';
+	record[5] = 'T';
+	record[6] = 'T';
+	record[7] = 'T';
+	record[8] = 'T';
+	record[9] = 'T';
+	record[10] = 'T';
+	record[11] = 'T';
+	record[12] = 'T';
+	record[13] = 'T';
+	record[14] = 'T';
+	record[15] = 'T';
+	record[16] = 'T';
+	record[17] = 'T';
+	record[18] = 'T';
+	record[19] = '2';
+	record[20] = '2';
+	record[21] = '_';
+	record[22] = '_';
+	record[23] = '\0';
+
+	dmlm->Insert("testingDB","table1",record);
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
-
-
+	system("pause");
+	
 }
 
 int main()	{
