@@ -20,7 +20,7 @@ public:
 
 	t_rc Select();
 	t_rc From();
-	t_rc Where(const char *dbName, const char *tName, const char *attrName, t_compOp compOp, void *value, REM_RecordID *ridsArray);
+	t_rc Where(const char *dbName, const char *tName, char *conditions, REM_RecordID *ridsArray);
 	t_rc Insert(const char *dbName, const char *tName, const char *record);
 	t_rc Delete();
 	t_rc Update();
