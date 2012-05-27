@@ -12,7 +12,7 @@ t_rc SYSM_MetadataManager::RecordRelationMeta(SYSM_relmet *relation){
 	const char *activedb;
 	char pathname[260];
 	activedb=this->dbm->getdbName();
-	_snprintf(pathname,sizeof(pathname),"%s/%s",activedb,"rel.met");
+	_snprintf_s(pathname,sizeof(pathname),"%s/%s",activedb,"rel.met");
 	myfile.open(pathname,ios::app);
 	myfile<<relation->relName<<" "<<relation->recSize<<" "<<relation->attrNo<<" "<<relation->indexNo<<endl;
 	myfile.flush();
@@ -32,7 +32,7 @@ t_rc SYSM_MetadataManager::RecordAttributeMeta(SYSM_attrmet *attribute){
 		attrType="STRING";
 	}
 	activedb=this->dbm->getdbName();
-	_snprintf(pathname,sizeof(pathname),"%s/%s",activedb,"attr.met");
+	_snprintf_s(pathname,sizeof(pathname),"%s/%s",activedb,"attr.met");
 	myfile.open(pathname);
 	myfile<<attribute->relName<<" "<<attribute->attrName<<" "<<attrType<<" "<<attribute->attrLength<<" "<<attribute->offset<<" "<<attribute->indexcode<<endl;
 	return OK;

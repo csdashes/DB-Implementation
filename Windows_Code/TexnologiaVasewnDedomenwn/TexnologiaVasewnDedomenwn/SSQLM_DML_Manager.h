@@ -11,17 +11,20 @@ private:
 
 	REM_RecordFileManager *rfm;
 	INXM_IndexManager *im;
+	char *dbName;
+	//char *cacheAttr;
+	//char *cacheRel;
 
 	t_rc GetAttrInfo(char *rec, int &offset, char *type, int &size, int &indexID);	//Retrieve attribute info
 public:
 
-	SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im);
+	SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im, char *dbName);
 	~SSQLM_DML_Manager();
 
 	t_rc Select();
 	t_rc From();
 	t_rc Where(const char *dbName, const char *tName, char *conditions, REM_RecordID *ridsArray);
-	t_rc Insert(const char *dbName, const char *tName, const char *record);
+	t_rc Insert(const char *tName, const char *record);
 	t_rc Delete();
 	t_rc Update();
 

@@ -360,7 +360,8 @@ void testSYSM() {
 	rc = sdm->OpenDatabase("testingDB");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	
+	//delete sdm;
+	//delete rfm;
 }
 
 void testSSQLM() {
@@ -371,7 +372,7 @@ void testSSQLM() {
 	SYSM_DatabaseManager *sdm = new SYSM_DatabaseManager(rfm);
 
 	INXM_IndexManager *im = new INXM_IndexManager(&mgr);
-	SSQLM_DDL_Manager *ddlm = new SSQLM_DDL_Manager(rfm,im);
+	SSQLM_DDL_Manager *ddlm = new SSQLM_DDL_Manager(rfm,im,"testingDB");
 
 	// Open the database to use it
 	t_rc rc = sdm->OpenDatabase("testingDB");
@@ -382,19 +383,19 @@ void testSSQLM() {
 	strcpy(dbName,sdm->getdbName());
 
 	// Create a table with name "table1"
-	rc = ddlm->CreateTable(dbName,"table1","id INT, name CHAR(15), age INT");
+	rc = ddlm->CreateTable("table1","id INT, name CHAR(15), age INT");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	// Create index
 //	rc = ddlm->CreateIndex(dbName,"table1","name");
 //	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	rc = ddlm->CreateIndex(dbName,"table1","age");
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	//rc = ddlm->CreateIndex("table1","age");
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	// Drop table
-//	rc = ddlm->DropTable(dbName,"table1");
-//	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	rc = ddlm->DropTable("table1");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	// Drop index
 //	rc = ddlm->DropIndex(dbName,"table1",1);
@@ -402,47 +403,23 @@ void testSSQLM() {
 
 	//test DML part
 
-	SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm,im);
-	char record[24];
+	//SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm,im,"testingDB");
+	//char record[24];
+	//strcpy(record,"1___ILIAS__________22__");
 
-	record[0] = '1';
-	record[1] = '_';
-	record[2] = '_';
-	record[3] = '_';
-	record[4] = 'I';
-	record[5] = 'L';
-	record[6] = 'I';
-	record[7] = 'A';
-	record[8] = 'S';
-	record[9] = '_';
-	record[10] = '_';
-	record[11] = '_';
-	record[12] = '_';
-	record[13] = '_';
-	record[14] = '_';
-	record[15] = '_';
-	record[16] = '_';
-	record[17] = '_';
-	record[18] = '_';
-	record[19] = '2';
-	record[20] = '2';
-	record[21] = '_';
-	record[22] = '_';
-	record[23] = '\0';
-
-	dmlm->Insert("testingDB","table1",record);
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	//dmlm->Insert("table1",record);
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 	
 	
-	REM_RecordID rids[50];
-	int slott;
-	dmlm->Where("testingDB","table1","age>20 AND name=ILIAS",rids);
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	//REM_RecordID rids[50];
+	//int slott;
+	//dmlm->Where("testingDB","table1","age>20 AND name=ILIAS",rids);
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	for(int lola = 0; lola <50; lola++){		//*********************************
-	//	rids[lola].GetSlot(slott);				//**	dokimh ean douleuei h where.
-	//	cout<<slott<<endl;						//**	paparia.
-	}											//*********************************
+	//for(int lola = 0; lola <50; lola++){		//*********************************
+	////	rids[lola].GetSlot(slott);				//**	dokimh ean douleuei h where.
+	////	cout<<slott<<endl;						//**	paparia.
+	//}											//*********************************
 	system("pause");
 }
 

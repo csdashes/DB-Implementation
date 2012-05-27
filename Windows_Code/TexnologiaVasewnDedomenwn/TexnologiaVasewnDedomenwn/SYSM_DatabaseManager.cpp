@@ -2,12 +2,12 @@
 
 SYSM_DatabaseManager::SYSM_DatabaseManager(REM_RecordFileManager *rfm){
 	this->rfm = rfm;
-	open=false;
-	activedb=NULL;
+	open = false;
+	this->activedb = (char*)malloc(sizeof(char)*255);
 }
 
 SYSM_DatabaseManager::~SYSM_DatabaseManager(){
-
+	//n kalei thn close database, free tous pointers.
 }
 
 t_rc SYSM_DatabaseManager::CreateDatabase (const char *dbName){
@@ -15,17 +15,17 @@ t_rc SYSM_DatabaseManager::CreateDatabase (const char *dbName){
 	// Create the directory (database)
 	char dirname[260];
 	strcpy(dirname,dbName);											//(to apo katw to egrapse o nikos k den douleue se mena, auto douleuei)
-	//_snprintf(dirname,sizeof(dirname),"./data/%s",dbName);		//create the path for the directory (database)
+	//_snprintf_s(dirname,sizeof(dirname),"./data/%s",dbName);		//create the path for the directory (database)
 	_mkdir(dirname);												//create the directory given the path			
 	
 	// Create the rel.met file
 	char pathname[260];
-	_snprintf(pathname,sizeof(pathname),"%s/rel.met",dirname);
+	_snprintf_s(pathname,sizeof(pathname),"%s/rel.met",dirname);
 	t_rc rc = this->rfm->CreateRecordFile(pathname,256);
 	if (rc != OK) { return rc; }
 
 	// Create the attr.met file
-	_snprintf(pathname,sizeof(pathname),"%s/attr.met",dirname);
+	_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dirname);
 	rc = this->rfm->CreateRecordFile(pathname,256);
 	if (rc != OK) { return rc; }
 
@@ -39,7 +39,8 @@ t_rc SYSM_DatabaseManager::OpenDatabase (const char *dbName) {
 		return (SYSM_OTHERDBISOPEN);
 	}
 													//prepei na mpei elegxos ean YPARXEI db me onoma dbName, prin thn energopoihsei
-	activedb = dbName;
+	activedb = (char*)malloc(sizeof(char)*strlen(dbName));
+	strcpy(activedb,dbName);
 	open = true;
 	return OK;
 }
@@ -47,8 +48,8 @@ t_rc SYSM_DatabaseManager::OpenDatabase (const char *dbName) {
 t_rc SYSM_DatabaseManager::CloseDatabase(){
 
 	if (!open) { return SYSM_DBCLOSED; }
-
-	activedb=NULL;
+	//close relmet, attrmet
+	delete activedb;
 	open=false;
 	return OK;
 }
@@ -74,8 +75,8 @@ t_rc SYSM_DatabaseManager::DropDatabase (const char *dbName){
 	char tablename[255];
 	char deletename[255];
 	const char *name;
-	_snprintf(relpath,sizeof(relpath),"%s/rel.met",dbName);
-	_snprintf(attrpath, sizeof(attrpath), "%s/attr.met",dbName);
+	_snprintf_s(relpath,sizeof(relpath),"%s/rel.met",dbName);
+	_snprintf_s(attrpath, sizeof(attrpath), "%s/attr.met",dbName);
 	myfile.open(relpath);
 	while (myfile.getline(tablename,255)){
 		while (tablename[i]!=' ' && tablename[i]!='\0') {
@@ -83,7 +84,7 @@ t_rc SYSM_DatabaseManager::DropDatabase (const char *dbName){
 		}
 		tablename[i]='\0';
 		name=tablename;
-		_snprintf(deletename,sizeof(deletename),"%s/%s",dbName,name);
+		_snprintf_s(deletename,sizeof(deletename),"%s/%s",dbName,name);
 		remove(deletename);
 		remove(relpath);
 		remove(attrpath);

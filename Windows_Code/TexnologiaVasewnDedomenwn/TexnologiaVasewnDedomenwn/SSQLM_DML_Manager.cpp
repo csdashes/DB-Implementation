@@ -5,15 +5,16 @@
 #include <vector>
 using namespace std;
 
-SSQLM_DML_Manager::SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im){
+SSQLM_DML_Manager::SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im,char *dbName){
 	this->rfm = rfm;
 	this->im = im;
+	this->dbName = dbName;
 }
 
 SSQLM_DML_Manager::~SSQLM_DML_Manager(){
 }
 
-t_rc SSQLM_DML_Manager::Insert(const char *dbName, const char *tName,const char *record){
+t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 	
 	char pathname[50];
 	REM_RecordFileHandle *rfh = new REM_RecordFileHandle();
@@ -21,7 +22,7 @@ t_rc SSQLM_DML_Manager::Insert(const char *dbName, const char *tName,const char 
 	char *tokens;
 	
 	// Open the table file
-	_snprintf(pathname,sizeof(pathname),"%s/%s",dbName,tName);
+	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 	t_rc rc = rfm->OpenRecordFile(pathname,*rfh);
 	if (rc != OK) { return rc; }
 
@@ -33,14 +34,14 @@ t_rc SSQLM_DML_Manager::Insert(const char *dbName, const char *tName,const char 
 	rc = rfm->CloseRecordFile(*rfh);
 	if (rc != OK) { return rc; }
 
-	// CHECK IF THERE ARE INDEXES
+	// CHECK IF THERE ARE INDEXES							na to kanw synarthsh
 	REM_RecordFileScan *rfs = new REM_RecordFileScan();
 	int tNameLength = strlen(tName);
 	REM_RecordHandle rh;
 	char *pData;
 
 	// Open rel.met file
-	_snprintf(pathname,sizeof(pathname),"%s/rel.met",dbName);
+	_snprintf_s(pathname,sizeof(pathname),"%s/rel.met",dbName);
 	rc = rfm->OpenRecordFile(pathname,*rfh);
 	if (rc != OK) { return rc; }
 
@@ -75,7 +76,7 @@ t_rc SSQLM_DML_Manager::Insert(const char *dbName, const char *tName,const char 
 	// First we find the ids of the index files by looking into the attr.met file
 	if( has_indexes ){
 
-		_snprintf(pathname,sizeof(pathname),"%s/attr.met",dbName);
+		_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
 		rc = rfm->OpenRecordFile(pathname,*rfh);
 		if (rc != OK) { return rc; }
 
@@ -99,7 +100,7 @@ t_rc SSQLM_DML_Manager::Insert(const char *dbName, const char *tName,const char 
 
 				// Retrieve the index entry from the attribute data
 				INXM_IndexHandle ih;
-				_snprintf(pathname,sizeof(pathname),"%s/%s",dbName,tName);
+				_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 
 				char *indexEntry;
 				indexEntry = (char*)malloc(size);
@@ -167,7 +168,7 @@ t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, char *condi
 	int index_no;
 
 	// Open attr.met file
-	_snprintf(pathname,sizeof(pathname),"%s/attr.met",dbName);
+	_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
 	t_rc rc = rfm->OpenRecordFile(pathname,*rfh);
 	if (rc != OK) { return rc; }
 
@@ -251,7 +252,7 @@ t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, char *condi
 																				//**	ean exei index to attribute, 
 			// Open index file													//**	anoigw to arxeio tou index
 			INXM_IndexHandle ih;												//**
-			_snprintf(pathname2,sizeof(pathname),"%s/%s",dbName,tName);			//**
+			_snprintf_s(pathname2,sizeof(pathname),"%s/%s",dbName,tName);			//**
 																				//**
 			rc = im->OpenIndex(pathname2,index_no,ih);							//**
 			if (rc != OK) { return rc; }										//**
@@ -302,7 +303,7 @@ t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, char *condi
 //	if(indexNo != -1){	//IN CASE OF INDEX
 //		// Open index file
 //		INXM_IndexHandle ih;
-//		_snprintf(pathname,sizeof(pathname),"%s/%s",dbName,tName);
+//		_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 //
 //		rc = im->OpenIndex(pathname,indexNo,ih);
 //		if (rc != OK) { return rc; }
@@ -318,7 +319,7 @@ t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, char *condi
 //	}
 //	else{	//IN CASE THERE IS NO INDEX
 //		// Open the table file
-//		_snprintf(pathname,sizeof(pathname),"%s/%s",dbName,tName);
+//		_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 //		rc = rfm->OpenRecordFile(pathname,*rfh);
 //		if (rc != OK) { return rc; }
 //																				//FIXXING: NA PAIRNEI SWSTES PARAMETROUS H OpenRecordScan

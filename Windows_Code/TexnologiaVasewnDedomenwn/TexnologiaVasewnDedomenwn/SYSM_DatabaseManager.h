@@ -16,7 +16,7 @@ class SYSM_DatabaseManager  {
 private:
 
 	bool open;
-	const char *activedb;
+	char *activedb;
 	
 	REM_RecordFileManager *rfm;
 	
