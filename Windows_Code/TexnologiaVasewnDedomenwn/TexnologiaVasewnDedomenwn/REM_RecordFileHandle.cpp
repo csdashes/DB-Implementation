@@ -158,6 +158,7 @@ t_rc REM_RecordFileHandle::DeleteRecord(const REM_RecordID &rid)	{
 	/* Check is file is open. */ 
 	if (!this->isOpen) { return REM_FHCLOSED; }
 	t_rc rc;
+	bool pageReleasedBool=false;
 	
 	/* Read page and slot we want to delete. */
 	int pageID, slot;
@@ -201,6 +202,7 @@ t_rc REM_RecordFileHandle::DeleteRecord(const REM_RecordID &rid)	{
 			/* Check if we need to release the page. */
 			if (wantedPageHeader.nRecords == 1) {
 				rc = this->sfh.ReleasePage(pageID);
+				pageReleasedBool = true;
 				if (rc != OK) { return rc; }
 				
 				/* We must change the lastPageID in REM File Header. */
@@ -281,14 +283,16 @@ t_rc REM_RecordFileHandle::DeleteRecord(const REM_RecordID &rid)	{
 
 	
 	/* Mark the page as dirty because we modified it */
-	rc = sfh.MarkPageDirty(pageID);
-	if (rc != OK) { return rc; }
-	/* Unpin the page */
-	rc = sfh.UnpinPage (pageID);
-	if (rc != OK) { return rc; }
+	if(!pageReleasedBool) {
+		rc = sfh.MarkPageDirty(pageID); //STORM_PAGENOTINBUFFER
+		if (rc != OK) { return rc; }
+		/* Unpin the page */
+		rc = sfh.UnpinPage (pageID);
+		if (rc != OK) { return rc; }
 	
-	sfh.FlushPage(pageID);
-	
+		sfh.FlushPage(pageID);
+	}
+
 	/* Record successfully deleted */
 	return (OK);
 }

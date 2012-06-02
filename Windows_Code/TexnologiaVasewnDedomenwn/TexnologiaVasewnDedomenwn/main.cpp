@@ -387,19 +387,21 @@ void testSSQLM() {
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	// Create index
-//	rc = ddlm->CreateIndex(dbName,"table1","name");
-//	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	rc = ddlm->CreateIndex("table1","name");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	//rc = ddlm->CreateIndex("table1","age");
-	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	rc = ddlm->CreateIndex("table1","age");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	// Drop table
 	rc = ddlm->DropTable("table1");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	// TEST IF DELETE REALLY WORKS
+	//ddlm->PrintFirstRecordInAttrMet("table1");
 
 	// Drop index
-//	rc = ddlm->DropIndex(dbName,"table1",1);
-//	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	//rc = ddlm->DropIndex("table1","name",1);
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	//test DML part
 

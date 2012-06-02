@@ -2,6 +2,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
 
 SSQLM_DDL_Manager::SSQLM_DDL_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im, char *dbName){
 	this->rfm = rfm;
@@ -62,7 +64,7 @@ t_rc SSQLM_DDL_Manager::DropTable(const char *tName){
 	rc = rfm->DestroyRecordFile(pathname);
 	if (rc != OK) { return rc; }
 
-	rc = DeleteTableMeta(tName);	// NEEDS TO BE IMPLEMENTED
+	rc = DeleteTableMeta(tName);
 	if (rc != OK) { return rc; }
 
 	return OK;
@@ -73,114 +75,47 @@ t_rc SSQLM_DDL_Manager::CreateIndex(const char *tName, const char *attrName){
 	t_attrType attrType;
 	int attrLength;
 	int indexNo;
-
-	
-	REM_RecordID rid;
 	REM_RecordHandle rh;
-	char *pData;
+	REM_RecordHandle rh2;
 	char pathname[50];
 	t_rc rc;
 
 	// UPDATE THE REL.MET FILE
-	char new_relmet_record[256];							
-	int i = 1;
-	char new_attrmet_record[256];						
-	char buffer[5];
-
-	// Find the record with table name "tName"
-	rc = FindRecordInRelMet(tName,rh);
-	if (rc != OK) {return rc; }
-
-	rc = rh.GetData(pData);
-	if (rc != OK) {return rc; }
-
-	// Raise the number of indexes
-	int NoIndexes = 0;										//number of indexes
-	char *tokens = strtok (pData,";");					//split the recordData
-	while (tokens != NULL)
-	{
-		 if( i == 4 ){									//the field of the indexes number
-			 NoIndexes = atoi(tokens);
-			 NoIndexes++;								//raise the number of indexes
-			 tokens = itoa(NoIndexes,buffer,10);
-		 }
-		 if( i == 1 ){
-			strcpy(new_relmet_record,tokens);
-			strcat(new_relmet_record,";");
-		 }
-		 else{
-			strcat(new_relmet_record,tokens);
-			strcat(new_relmet_record,";");
-		 }
-		 i++;
-		 tokens = strtok (NULL, ";");
-	}
-	strcat(new_relmet_record,";");
-	memcpy(pData, new_relmet_record, 256);
-
-	// Update the record
-	rc = relmet->UpdateRecord(rh);
-	if (rc != OK) {return rc; }
+	rc = UpdateRelmetIndexes(tName,rh,indexNo,true); //true means that it will increase the number of indexes
+	if (rc != OK) { return rc; }
 
 	// UPDATE THE ATTR.MET FILE
-	// Find the record with attribute name "attrName"
-	rc = FindRecordInAttrMet(tName,attrName,rh);
-	if (rc != OK) {return rc; }
-
-	rc = rh.GetData(pData);
-	if (rc != OK) {return rc; }
-
-	// Retrieve attrType and attrLength and create the new attribute record raising the index number.
-	tokens = strtok (pData,";");	//split the recordData
-	i = 1;
-	while (tokens != NULL)
-	{
-		 if( i == 4 ){	//the field of the indexes number
-			 if( strcmp(tokens,"TYPE_STRING") == 0 )
-				 attrType = TYPE_STRING;
-			 else
-				 attrType = TYPE_INT;
-		 }
-		 if( i == 5 ){
-			 attrLength = atoi(tokens);
-		 }
-		 if( i == 6 ){
-			 tokens = itoa(NoIndexes,buffer,10);
-		 }
-		 if( i == 1 ){
-			strcpy(new_attrmet_record,tokens);
-			strcat(new_attrmet_record,";");
-		 }
-		 else{
-			strcat(new_attrmet_record,tokens);
-			strcat(new_attrmet_record,";");
-		 }
-		 i++;
-		 tokens = strtok (NULL, ";");
-	}
-	strcat(new_attrmet_record,";");
-	memcpy(pData, new_attrmet_record, 256);
-
-	// Update the record
-	rc = attrmet->UpdateRecord(rh);
+	rc = UpdateAttrmetIndexNo(tName,attrName,rh2,attrType,attrLength,indexNo);
 	if (rc != OK) {return rc; }
 
 	// Create the index file
 	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
-	rc = im->CreateIndex(pathname,NoIndexes,attrType,attrLength);
+	rc = im->CreateIndex(pathname,indexNo,attrType,attrLength);
 	if (rc != OK) { return rc; }
 
 	return OK;
 }
 
-t_rc SSQLM_DDL_Manager::DropIndex(const char *tName, int indexNo){
+t_rc SSQLM_DDL_Manager::DropIndex(const char *tName, const char *attrName, int indexNo){
+	REM_RecordHandle rh;
+	REM_RecordHandle rh2;
+	INXM_IndexHandle ih;
+	t_attrType attrType;
+	int attrLength;
 
 	char pathname[50];
+
 	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 	t_rc rc = im->DestroyIndex(pathname,indexNo);
 	if (rc != OK) { return rc; }
 
-	// CODE HERE: na meiwsw ton ari8mo twn indexes apo rel.met, attr.met
+	// Decrease the number of indexes in rel.met
+	rc = UpdateRelmetIndexes(tName,rh,indexNo,false);
+	if (rc != OK) { return rc; }
+
+	// Change the code of the index -1
+	rc = UpdateAttrmetIndexNo(tName,attrName,rh2,attrType,attrLength,-1); 
+	if (rc != OK) { return rc; }
 
 	return OK;
 }
@@ -361,6 +296,8 @@ t_rc SSQLM_DDL_Manager::FindRecordInAttrMet(const char *tName,const char *attrNa
 
 t_rc SSQLM_DDL_Manager::DeleteTableMeta(const char *tName){
 	
+	char *pData;
+	int indexNo;
 	t_rc rc;
 	REM_RecordHandle rh;
 	REM_RecordID rid;
@@ -372,20 +309,173 @@ t_rc SSQLM_DDL_Manager::DeleteTableMeta(const char *tName){
 	rc = rh.GetRecordID(rid);
 	if (rc != OK) {return rc; }
 
-	rc = relmet->DeleteRecord(rid);	// RETURNS ERROR: STORM PAGENOTINBUFFER
+	rc = relmet->DeleteRecord(rid);
+	if (rc != OK) {return rc; }
+
+	// NOT SURE
+	rc = relmet->FlushPages();
 	if (rc != OK) {return rc; }
 
 	// Delete metadata from attr.met
-	while(FindRecordInAttrMet(tName,rh) != INXM_FSEOF){
+	while(FindRecordInAttrMet(tName,rh) != STORM_EOF){
 		rc = rh.GetRecordID(rid);
 		if (rc != OK) {return rc; }
 
+		rc = rh.GetData(pData);
+		if (rc != OK) {return rc; }
+
+		rc = GetIndexNo(pData,indexNo);
+		if (rc != OK) {return rc; }
+
+		if(indexNo!=-1){
+			// DELETE THE INDEX FILE
+			char pathname[50];
+
+			_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
+			t_rc rc = im->DestroyIndex(pathname,indexNo);
+			if (rc != OK) { return rc; }
+		}
 		rc = attrmet->DeleteRecord(rid);
+		if (rc != OK) {return rc; }
+
+		// NOT SURE
+		rc = attrmet->FlushPages();
 		if (rc != OK) {return rc; }
 	}
 
-	// Delete the indexes
-	// CODE HERE
 
+	return OK;
+}
+
+t_rc SSQLM_DDL_Manager::UpdateRelmetIndexes(const char *tName, REM_RecordHandle &rh, int &indexNo, bool increase){
+
+	// UPDATE THE REL.MET FILE
+	char new_relmet_record[256];							
+	int i = 1;					
+	char buffer[5];
+	t_rc rc;
+	char *pData;
+
+	// Find the record with table name "tName"
+	rc = FindRecordInRelMet(tName,rh);
+	if (rc != OK) {return rc; }
+
+	rc = rh.GetData(pData);
+	if (rc != OK) {return rc; }
+
+
+	// Raise the number of indexes
+	indexNo = 0;									//number of indexes
+	char *tokens = strtok (pData,";");					//split the recordData
+	while (tokens != NULL)
+	{
+		 if( i == 4 ){									//the field of the indexes number
+			 indexNo = atoi(tokens);
+			 if(increase)
+				 indexNo++;							//increase the number of indexes
+			 else
+				 indexNo--;							//decrease the number of indexes
+			 tokens = itoa(indexNo,buffer,10);
+		 }
+		 if( i == 1 ){
+			strcpy(new_relmet_record,tokens);
+			strcat(new_relmet_record,";");
+		 }
+		 else{
+			strcat(new_relmet_record,tokens);
+			strcat(new_relmet_record,";");
+		 }
+		 i++;
+		 tokens = strtok (NULL, ";");
+	}
+	strcat(new_relmet_record,";");
+	memcpy(pData, new_relmet_record, 256);
+
+	// Update the record
+	rc = relmet->UpdateRecord(rh);
+	if (rc != OK) {return rc; }
+
+	return OK;
+}
+
+t_rc SSQLM_DDL_Manager::UpdateAttrmetIndexNo(const char *tName, const char *attrName, REM_RecordHandle &rh, t_attrType &attrType, int &attrLength, int indexNo){
+	int i = 1;
+	char new_attrmet_record[256];						
+	char buffer[5];
+	t_rc rc;
+	char *pData;
+	
+	//Find the record with attribute name "attrName"
+	rc = FindRecordInAttrMet(tName,attrName,rh);
+	if (rc != OK) {return rc; }
+
+	rc = rh.GetData(pData);
+	if (rc != OK) {return rc; }
+
+	// Retrieve attrType and attrLength and create the new attribute record raising the index number.
+	char *tokens = strtok (pData,";");	//split the recordData
+	i = 1;
+	while (tokens != NULL)
+	{
+		 if( i == 4 ){	//the field of the indexes number
+			 if( strcmp(tokens,"TYPE_STRING") == 0 )
+				 attrType = TYPE_STRING;
+			 else
+				 attrType = TYPE_INT;
+		 }
+		 if( i == 5 ){
+			 attrLength = atoi(tokens);
+		 }
+		 if( i == 6 ){
+			 tokens = itoa(indexNo,buffer,10);
+		 }
+		 if( i == 1 ){
+			strcpy(new_attrmet_record,tokens);
+			strcat(new_attrmet_record,";");
+		 }
+		 else{
+			strcat(new_attrmet_record,tokens);
+			strcat(new_attrmet_record,";");
+		 }
+		 i++;
+		 tokens = strtok (NULL, ";");
+	}
+	strcat(new_attrmet_record,";");
+	memcpy(pData, new_attrmet_record, 256);
+
+	// Update the record
+	rc = attrmet->UpdateRecord(rh);
+	if (rc != OK) {return rc; }
+
+	return OK;
+}
+
+t_rc SSQLM_DDL_Manager::GetIndexNo(char *pData, int &indexNo){
+	char *tokens = strtok (pData,";");	//split the recordData
+	char buffer[5];
+	int i = 1;
+
+	while (tokens != NULL)
+	{
+		 if( i == 6 ){
+			 indexNo = atoi(tokens);
+		 }
+		 i++;
+		 tokens = strtok (NULL, ";");
+	}
+
+	return OK;
+}
+
+
+
+
+// TESTING FUNCTION
+t_rc SSQLM_DDL_Manager::PrintFirstRecordInAttrMet(const char *tName){
+	REM_RecordHandle rh;
+	char *pData;
+	FindRecordInAttrMet(tName,rh);
+	rh.GetData(pData);
+	cout<<pData<<endl;
 	return OK;
 }

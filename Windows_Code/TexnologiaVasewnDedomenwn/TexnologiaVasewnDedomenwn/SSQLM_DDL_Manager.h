@@ -24,16 +24,24 @@ private:
 	t_rc FindRecordInRelMet(const char *tName, REM_RecordHandle &rh);
 	t_rc FindRecordInAttrMet(const char *tName, REM_RecordHandle &rh);
 	t_rc FindRecordInAttrMet(const char *tName, const char *attrName, REM_RecordHandle &rh);
+	t_rc UpdateRelmetIndexes(const char *tName, REM_RecordHandle &rh, int &indexNo, bool increase);
+	t_rc UpdateAttrmetIndexNo(const char *tName, const char *attrName, REM_RecordHandle &rh, t_attrType &attrType, int &attrLength, int indexNo);
+	t_rc GetIndexNo(char *pData, int &indexNo);
 
 public:
 
 	SSQLM_DDL_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im, char *dbName);
 	~SSQLM_DDL_Manager();
 
+	
+
 	t_rc CreateTable(const char *tname, const char *attributes);
 	t_rc DropTable(const char *tname);
 	t_rc CreateIndex(const char *tname, const char *attrName);
-	t_rc DropIndex(const char *tname, int indexNo);
+	t_rc DropIndex(const char *tname, const char *attrName, int indexNo);
+
+	// TESTING FUNCTION
+	t_rc PrintFirstRecordInAttrMet( const char *tname );
 };
 
 #endif
