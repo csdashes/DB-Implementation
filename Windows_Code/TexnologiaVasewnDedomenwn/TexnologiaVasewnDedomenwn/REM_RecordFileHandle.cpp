@@ -211,7 +211,8 @@ t_rc REM_RecordFileHandle::DeleteRecord(const REM_RecordID &rid)	{
 				memcpy(this->pData_FileHeader, &this->remFileHeader, REM_FILEHEADER_SIZE);
 				/* Mark REM File Header frame as dirty */
 				rc = this->sfh.MarkPageDirty(this->pageNum_FileHeader);
-				if (rc != OK) { return rc; }				
+				if (rc != OK) { return rc; }
+
 			}
 			else {
 				/* If our record is the last one in the row but more data exist, we just decrease the number of records the page has. */
@@ -290,7 +291,8 @@ t_rc REM_RecordFileHandle::DeleteRecord(const REM_RecordID &rid)	{
 		rc = sfh.UnpinPage (pageID);
 		if (rc != OK) { return rc; }
 	
-		sfh.FlushPage(pageID);
+		rc = sfh.FlushPage(pageID);
+		if (rc != OK) { return rc; }
 	}
 
 	/* Record successfully deleted */

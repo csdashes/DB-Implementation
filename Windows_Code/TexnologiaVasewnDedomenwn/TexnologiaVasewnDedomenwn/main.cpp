@@ -393,34 +393,62 @@ void testSSQLM() {
 	rc = ddlm->CreateIndex("table1","age");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	// Drop table
-	rc = ddlm->DropTable("table1");
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
-	// TEST IF DELETE REALLY WORKS
-	//ddlm->PrintFirstRecordInAttrMet("table1");
 
+
+	// Drop table
+	//rc = ddlm->DropTable("table1");
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	// TEST IF DELETE REALLY WORKS
+	//rc = ddlm->PrintFirstRecordInAttrMet("table2");
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 	// Drop index
 	//rc = ddlm->DropIndex("table1","name",1);
 	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
+	delete ddlm;
+	delete im;
+	delete sdm;
+	delete rfm;
+
+	STORM_StorageManager mgr2;
+	REM_RecordFileManager *rfm2 = new REM_RecordFileManager(&mgr2);
+
+	SYSM_DatabaseManager *sdm2 = new SYSM_DatabaseManager(rfm2);
+
+	INXM_IndexManager *im2 = new INXM_IndexManager(&mgr2);
+
+
 	//test DML part
 
-	//SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm,im,"testingDB");
+	//char pathname[255];
+	//REM_RecordFileHandle *rfh2 = new REM_RecordFileHandle();
+	//_snprintf_s(pathname,sizeof(pathname),"testingDB/attr.met");
+	//rc = rfm2->OpenRecordFile(pathname,*rfh2);
+	//REM_RecordFileScan *rfs = new REM_RecordFileScan();
+	//rfs->OpenRecordScan(*rfh2,TYPE_STRING,10, 0, EQ_OP, "table1;age");
+	//REM_RecordHandle rh2;
+	//rfs->GetNextRecord(rh2);
+	//char *pDataa;
+	//rh2.GetData(pDataa);
+	//cout<<pDataa<<endl;
+
+	//SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm2,im2,"testingDB");
 	//char record[24];
 	//strcpy(record,"1___ILIAS__________22__");
 
-	//dmlm->Insert("table1",record);
+	//rc = dmlm->Insert("table1",record);
 	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
-	
-	
+	//
+	//
 	//REM_RecordID rids[50];
 	//int slott;
-	//dmlm->Where("testingDB","table1","age>20 AND name=ILIAS",rids);
+	//dmlm->Where("table1","age>20 AND name=ILIAS",rids);
 	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	//for(int lola = 0; lola <50; lola++){		//*********************************
-	////	rids[lola].GetSlot(slott);				//**	dokimh ean douleuei h where.
-	////	cout<<slott<<endl;						//**	paparia.
+	//	rids[lola].GetSlot(slott);			//**	dokimh ean douleuei h where.
+	//	cout<<slott<<endl;					//**	paparia.
 	//}											//*********************************
 	system("pause");
 }

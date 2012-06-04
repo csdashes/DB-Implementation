@@ -9,6 +9,8 @@ SSQLM_DML_Manager::SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManag
 	this->rfm = rfm;
 	this->im = im;
 	this->dbName = dbName;
+	t_rc rc = OpenRelmet(dbName);
+	rc = OpenAttrmet(dbName);
 }
 
 SSQLM_DML_Manager::~SSQLM_DML_Manager(){
@@ -41,12 +43,12 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 	char *pData;
 
 	// Open rel.met file
-	_snprintf_s(pathname,sizeof(pathname),"%s/rel.met",dbName);
-	rc = rfm->OpenRecordFile(pathname,*rfh);
-	if (rc != OK) { return rc; }
+	//_snprintf_s(pathname,sizeof(pathname),"%s/rel.met",dbName);
+	//rc = rfm->OpenRecordFile(pathname,*relmet);
+	//if (rc != OK) { return rc; }
 
 	// Find the record with table name "tName"
-	rc = rfs->OpenRecordScan(*rfh,TYPE_STRING,tNameLength, 0, EQ_OP, (char*)tName);
+	rc = rfs->OpenRecordScan(*relmet,TYPE_STRING,tNameLength, 0, EQ_OP, (char*)tName);
 	if (rc != OK) {return rc; }
 
 	rc = rfs->GetNextRecord(rh);
@@ -76,11 +78,11 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 	// First we find the ids of the index files by looking into the attr.met file
 	if( has_indexes ){
 
-		_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
-		rc = rfm->OpenRecordFile(pathname,*rfh);
-		if (rc != OK) { return rc; }
+		//_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
+		//rc = rfm->OpenRecordFile(pathname,*rfh);
+		//if (rc != OK) { return rc; }
 
-		rc = rfs->OpenRecordScan(*rfh,TYPE_STRING,tNameLength, 0, EQ_OP, (char*)tName);
+		rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,tNameLength, 0, EQ_OP, (char*)tName);
 		if (rc != OK) {return rc; }
 
 		int offset = 0;
@@ -140,7 +142,7 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 	return OK;
 }
 
-t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, char *conditions, REM_RecordID *ridsArray){
+t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID *ridsArray){
 
 	
 	
@@ -168,9 +170,9 @@ t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, char *condi
 	int index_no;
 
 	// Open attr.met file
-	_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
-	t_rc rc = rfm->OpenRecordFile(pathname,*rfh);
-	if (rc != OK) { return rc; }
+	//_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
+	//t_rc rc = rfm->OpenRecordFile(pathname,*rfh);
+	//if (rc != OK) { return rc; }
 
 	// Split with delimeter "AND"
 	while(strstr(pointer,"AND")){					//***********************************************
@@ -223,11 +225,11 @@ t_rc SSQLM_DML_Manager::Where(const char *dbName, const char *tName, char *condi
 		strcat(tableNattr,conditionAttribute);												//**
 																							//**
 		// Find the record																	//**
-		rc = rfs->OpenRecordScan(*rfh,TYPE_STRING,finalLength, 0, EQ_OP, tableNattr);		//**
+		t_rc rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,finalLength, 0, EQ_OP, tableNattr);		//**
 		if (rc != OK) {return rc; }															//**
 																							//**
 		rc = rfs->GetNextRecord(rh);														//**
-		if (rc != OK) {return rc; }															//**
+		if (rc != OK) {return rc; }	
 																							//**
 		int indexNo;																		//**
 		//Get the index id																	//**
@@ -366,6 +368,26 @@ t_rc SSQLM_DML_Manager::GetAttrInfo(char *rec, int &offset, char *type, int &siz
 		i++;
 		tokens = strtok (NULL, ";");
 	}
+
+	return OK;
+}
+
+t_rc SSQLM_DML_Manager::OpenRelmet(char *dbName){
+	char pathname[255];
+	this->relmet = new REM_RecordFileHandle();
+	_snprintf_s(pathname,sizeof(pathname),"%s/rel.met",dbName);
+	t_rc rc = rfm->OpenRecordFile(pathname,*relmet);
+	if (rc != OK) { return rc; }
+
+	return OK;
+}
+
+t_rc SSQLM_DML_Manager::OpenAttrmet(char *dbName){
+	char pathname[255];
+	this->attrmet = new REM_RecordFileHandle();
+	_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
+	t_rc rc = rfm->OpenRecordFile(pathname,*attrmet);
+	if (rc != OK) { return rc; }
 
 	return OK;
 }

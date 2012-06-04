@@ -11,7 +11,12 @@ private:
 
 	REM_RecordFileManager *rfm;
 	INXM_IndexManager *im;
+	REM_RecordFileHandle *attrmet;
+	REM_RecordFileHandle *relmet;
 	char *dbName;
+
+	t_rc OpenRelmet(char *dbName);
+	t_rc OpenAttrmet(char *dbName);
 	//char *cacheAttr;
 	//char *cacheRel;
 
@@ -23,7 +28,7 @@ public:
 
 	t_rc Select();
 	t_rc From();
-	t_rc Where(const char *dbName, const char *tName, char *conditions, REM_RecordID *ridsArray);
+	t_rc Where(const char *tName, char *conditions, REM_RecordID *ridsArray);
 	t_rc Insert(const char *tName, const char *record);
 	t_rc Delete();
 	t_rc Update();
