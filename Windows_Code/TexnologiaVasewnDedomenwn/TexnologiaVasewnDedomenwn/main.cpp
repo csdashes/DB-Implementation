@@ -366,12 +366,12 @@ void testSYSM() {
 
 void testSSQLM() {
 
-	STORM_StorageManager mgr;
-	REM_RecordFileManager *rfm = new REM_RecordFileManager(&mgr);
+	STORM_StorageManager *mgr = new STORM_StorageManager();
+	REM_RecordFileManager *rfm = new REM_RecordFileManager(mgr);
 
 	SYSM_DatabaseManager *sdm = new SYSM_DatabaseManager(rfm);
 
-	INXM_IndexManager *im = new INXM_IndexManager(&mgr);
+	INXM_IndexManager *im = new INXM_IndexManager(mgr);
 	SSQLM_DDL_Manager *ddlm = new SSQLM_DDL_Manager(rfm,im,"testingDB");
 
 	// Open the database to use it
@@ -410,46 +410,66 @@ void testSSQLM() {
 	delete im;
 	delete sdm;
 	delete rfm;
+	delete mgr;
 
-	STORM_StorageManager mgr2;
-	REM_RecordFileManager *rfm2 = new REM_RecordFileManager(&mgr2);
+	STORM_StorageManager *mgr2 = new STORM_StorageManager();
+	REM_RecordFileManager *rfm2 = new REM_RecordFileManager(mgr2);
 
 	SYSM_DatabaseManager *sdm2 = new SYSM_DatabaseManager(rfm2);
 
-	INXM_IndexManager *im2 = new INXM_IndexManager(&mgr2);
+	INXM_IndexManager *im2 = new INXM_IndexManager(mgr2);
 
 
 	//test DML part
 
-	//char pathname[255];
-	//REM_RecordFileHandle *rfh2 = new REM_RecordFileHandle();
-	//_snprintf_s(pathname,sizeof(pathname),"testingDB/attr.met");
-	//rc = rfm2->OpenRecordFile(pathname,*rfh2);
-	//REM_RecordFileScan *rfs = new REM_RecordFileScan();
-	//rfs->OpenRecordScan(*rfh2,TYPE_STRING,10, 0, EQ_OP, "table1;age");
-	//REM_RecordHandle rh2;
-	//rfs->GetNextRecord(rh2);
-	//char *pDataa;
-	//rh2.GetData(pDataa);
-	//cout<<pDataa<<endl;
+	char pathname[255];
+	REM_RecordFileHandle *rfh2 = new REM_RecordFileHandle();
+	_snprintf_s(pathname,sizeof(pathname),"testingDB/attr.met");
+	rc = rfm2->OpenRecordFile(pathname,*rfh2);
+	REM_RecordFileScan *rfs = new REM_RecordFileScan();
+	rfs->OpenRecordScan(*rfh2,TYPE_STRING,10, 0, EQ_OP, "table1;age");
+	REM_RecordHandle rh2;
+	rfs->GetNextRecord(rh2);
+	char *pDataa;
+	rh2.GetData(pDataa);
+	cout<<pDataa<<endl;
 
-	//SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm2,im2,"testingDB");
-	//char record[24];
-	//strcpy(record,"1___ILIAS__________22__");
+	SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm2,im2,"testingDB");
+	char record[24];
+	strcpy(record,"1___ILIAS__________22__");
 
-	//rc = dmlm->Insert("table1",record);
-	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
-	//
-	//
-	//REM_RecordID rids[50];
-	//int slott;
-	//dmlm->Where("table1","age>20 AND name=ILIAS",rids);
-	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	rc = dmlm->Insert("table1",record);
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+	
 
-	//for(int lola = 0; lola <50; lola++){		//*********************************
-	//	rids[lola].GetSlot(slott);			//**	dokimh ean douleuei h where.
-	//	cout<<slott<<endl;					//**	paparia.
-	//}											//*********************************
+
+		delete dmlm;
+	delete im2;
+	delete sdm2;
+	delete rfm2;
+	delete mgr2;
+
+	STORM_StorageManager *mgr3 = new STORM_StorageManager();
+	REM_RecordFileManager *rfm3 = new REM_RecordFileManager(mgr3);
+
+	SYSM_DatabaseManager *sdm3 = new SYSM_DatabaseManager(rfm3);
+
+	INXM_IndexManager *im3 = new INXM_IndexManager(mgr3);
+
+	SSQLM_DML_Manager *dmlm3 = new SSQLM_DML_Manager(rfm3,im3,"testingDB");
+
+
+
+	
+	REM_RecordID rids[50];
+	int slott;
+	dmlm3->Where("table1","age>20 AND name=ILIAS",rids);
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	for(int lola = 0; lola <50; lola++){		//*********************************
+		rids[lola].GetSlot(slott);			//**	dokimh ean douleuei h where.
+		cout<<slott<<endl;					//**	paparia.
+	}											//*********************************
 	system("pause");
 }
 

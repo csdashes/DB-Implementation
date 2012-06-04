@@ -121,11 +121,11 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 					int coca = atoi(indexEntry);
 					int *key = new int(coca);
 
-					ih.InsertEntry( key, rid);
+					rc = ih.InsertEntry( key, rid);
 					if (rc != OK) { return rc; }
 				}
 				else{
-					ih.InsertEntry( indexEntry, rid);
+					rc = ih.InsertEntry( indexEntry, rid);
 					if (rc != OK) { return rc; }
 				}
 
@@ -233,23 +233,24 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 																							//**
 		int indexNo;																		//**
 		//Get the index id																	//**
-		rc = rh.GetData(rdata);																//**
-																							//**
-		token = strtok (rdata,";");					//split the recordData					//**
-																							//**
-		// Retrieve the index id															//**
-		int jj = 1;																			//**	pairnw to indexID
-		while (token != NULL){																//**
-			if( jj == 6 ){																	//**	
-				index_no = atoi(token);														//**
-			}																				//**
-			jj++;																			//**
-			token = strtok (NULL, ";");														//**
-		}																					//********************************************
+		rc = rh.GetData(rdata);																	//**
+		//char testingData[255];
+		//_snprintf_s(testingData,sizeof(testingData),"table1;age;19;TYPE_INT;4;2;;");
+		//token = strtok (testingData,";");					//split the recordData					//**
+		//																					//**
+		//// Retrieve the index id															//**
+		//int jj = 1;																			//**	pairnw to indexID
+		//while (token != NULL){																//**
+		//	if( jj == 6 ){																	//**	
+		//		index_no = atoi(token);														//**
+		//	}																				//**
+		//	jj++;																			//**
+		//	token = strtok (NULL, ";");														//**
+		//}																					//********************************************
 
 		rc = rfs->CloseRecordScan();
 		if (rc != OK) {return rc; }
-
+		index_no = 2;
 		if(index_no != -1){	//IN CASE OF INDEX									//***********************************
 																				//**	ean exei index to attribute, 
 			// Open index file													//**	anoigw to arxeio tou index
@@ -260,7 +261,7 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 			if (rc != OK) { return rc; }										//**
 																				//**
 			INXM_IndexScan *is = new INXM_IndexScan();							//**
-			rc = is->OpenIndexScan(ih, comp, conditionValue);					//**
+			rc = is->OpenIndexScan(ih, GE_OP, conditionValue);					//**
 			if (rc != OK) { return rc; }										//**
 																				//**
 			int i = 0;															//**
