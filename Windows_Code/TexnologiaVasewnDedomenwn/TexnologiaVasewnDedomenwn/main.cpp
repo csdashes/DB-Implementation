@@ -453,8 +453,8 @@ void testSSQLM() {
 	REM_RecordFileManager *rfm3 = new REM_RecordFileManager(mgr3);
 
 	SYSM_DatabaseManager *sdm3 = new SYSM_DatabaseManager(rfm3);
-
-	INXM_IndexManager *im3 = new INXM_IndexManager(mgr3);
+	STORM_StorageManager *mgr4 = new STORM_StorageManager();
+	INXM_IndexManager *im3 = new INXM_IndexManager(mgr4);
 
 	SSQLM_DML_Manager *dmlm3 = new SSQLM_DML_Manager(rfm3,im3,"testingDB");
 
@@ -467,8 +467,8 @@ void testSSQLM() {
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	for(int lola = 0; lola <50; lola++){		//*********************************
-		rids[lola].GetSlot(slott);			//**	dokimh ean douleuei h where.
-		cout<<slott<<endl;					//**	paparia.
+		rids[lola].GetSlot(slott);				//**	dokimh ean douleuei h where.
+		cout<<slott<<endl;						//**	paparia.
 	}											//*********************************
 	system("pause");
 }

@@ -195,11 +195,8 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 	conditionsList.push_back(pointer);				//************************************************
 
 	for(int iii=0; iii< conditionsList.size(); iii++){					//*****************************************
-																		//**	Gia ka8e condition, pairnw to 
-		conditionAttribute = strtok (conditionsList[iii],"><=!");		//**	attribute,
-		conditionValue = strtok (NULL, "><=!");							//**	to value
-																		//**
-			// Get the comparison										//**	kai ton telesth sygkrishs
+		
+		// Get the comparison										//**	kai ton telesth sygkrishs
 			if(strstr(conditionsList[iii],"<="))		//case of <=	//**
 				comp = LE_OP;											//**
 			else if(strstr(conditionsList[iii],">="))	//case of >=	//**
@@ -212,6 +209,12 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 				comp = GT_OP;											//**
 			else if(strstr(conditionsList[iii],"="))	//case of =		//**
 				comp = EQ_OP;											//*******************************************
+
+		//**	Gia ka8e condition, pairnw to 
+		conditionAttribute = strtok (conditionsList[iii],"><=!");		//**	attribute,
+		conditionValue = strtok (NULL, "><=!");							//**	to value
+																		//**
+			
 
 		// Calculate the length of "tName;attrName"											//***************************************
 		int tNameLength = strlen(tName);													//**	Sto arxeio attr.met psaxnw na dw
@@ -261,7 +264,7 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 			if (rc != OK) { return rc; }										//**
 																				//**
 			INXM_IndexScan *is = new INXM_IndexScan();							//**
-			rc = is->OpenIndexScan(ih, GE_OP, conditionValue);					//**
+			rc = is->OpenIndexScan(ih, comp, conditionValue);					//**
 			if (rc != OK) { return rc; }										//**
 																				//**
 			int i = 0;															//**
