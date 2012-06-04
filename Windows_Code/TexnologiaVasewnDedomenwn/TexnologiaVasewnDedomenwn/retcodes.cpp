@@ -40,6 +40,7 @@ void DisplayReturnCode(t_rc rc)
 			
 	/* return codes for INDEX MODULE (INXM) */
 		
+	case INXM_INVALIDINDEX:			msg = "Invalid index, maybe no records inside?"; break;
 	case INXM_INVALIDRECSIZE:		msg = "Invalid record size"; break;
 	case INXM_IHCLOSED:				msg = "INXM handle closed"; break;
 	case INXM_KEY_NOT_FOUND:		msg = "Key not found in b+ tree"; break;
