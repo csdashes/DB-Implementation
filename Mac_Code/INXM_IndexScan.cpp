@@ -190,6 +190,11 @@ t_rc INXM_IndexScan::OpenIndexScan(const INXM_IndexHandle &ih, t_compOp compOp, 
 	
 	this->sfh = (STORM_FileHandle*)&ih.sfh;
 	
+	/* Check if the index is initialized and have records inside. */
+	if (this->inxmFileHeader.treeRoot == 0) {
+		return(INXM_INVALIDINDEX);
+	}
+
 	/* Load root page. */
 	this->sfh->GetPage(this->inxmFileHeader.treeRoot, this->rootPageHandle);
 	
