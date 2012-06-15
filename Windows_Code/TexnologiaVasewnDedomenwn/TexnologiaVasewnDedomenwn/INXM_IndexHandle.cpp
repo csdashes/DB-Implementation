@@ -464,6 +464,9 @@ t_rc INXM_IndexHandle::CreateLastDataPage(STORM_PageHandle &pageHandle) {
 	this->inxmFileHeader.lastDataPage = pageID;
 	memcpy(this->pData_FileHeader, &this->inxmFileHeader, INXM_FILEHEADER_SIZE);
 	
+    rc = this->sfh.MarkPageDirty(this->pageNum_FileHeader);
+    if (rc != OK) { return rc; }
+    
 	rc = this->sfh.FlushPage(this->pageNum_FileHeader);
 	if (rc != OK) { return rc; }
 	
@@ -573,6 +576,9 @@ t_rc INXM_IndexHandle::StartNewTree(void *pData, const REM_RecordID &rid) {
 	/* Update File Header. (New root) */
 	memcpy(this->pData_FileHeader, &this->inxmFileHeader, INXM_FILEHEADER_SIZE);
 	
+    rc = this->sfh.MarkPageDirty(this->pageNum_FileHeader);
+    if (rc != OK) { return rc; }
+    
 	rc = this->sfh.FlushPage(this->pageNum_FileHeader);
 	if (rc != OK) { return rc; }
 	
@@ -604,6 +610,9 @@ t_rc INXM_IndexHandle::InsertIntoParent(int rootID, STORM_PageHandle leftPage, I
 		/* Update inxm file header. */
 		memcpy(this->pData_FileHeader, &this->inxmFileHeader, INXM_FILEHEADER_SIZE);
 		
+        rc = this->sfh.MarkPageDirty(this->pageNum_FileHeader);
+        if (rc != OK) { return rc; }
+        
 		rc = this->sfh.FlushPage(this->pageNum_FileHeader);
 		if (rc != OK) { return rc; }
 		
