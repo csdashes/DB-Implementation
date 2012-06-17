@@ -237,23 +237,26 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 		int indexNo;																		//**
 		//Get the index id																	//**
 		rc = rh.GetData(rdata);																	//**
-		//char testingData[255];
-		//_snprintf_s(testingData,sizeof(testingData),"table1;age;19;TYPE_INT;4;2;;");
-		//token = strtok (testingData,";");					//split the recordData					//**
-		//																					//**
-		//// Retrieve the index id															//**
-		//int jj = 1;																			//**	pairnw to indexID
-		//while (token != NULL){																//**
-		//	if( jj == 6 ){																	//**	
-		//		index_no = atoi(token);														//**
-		//	}																				//**
-		//	jj++;																			//**
-		//	token = strtok (NULL, ";");														//**
-		//}																					//********************************************
+		
+		token = strtok (rdata,";");					//split the recordData					//**
+																							//**
+		// Retrieve the index id															//**
+		int jj = 1;																			//**	pairnw to indexID
+		while (token != NULL){																//**
+			if( jj == 6 ){																	//**	
+				index_no = atoi(token);														//**
+			}																				//**
+			jj++;																			//**
+			token = strtok (NULL, ";");														//**
+		}																					//********************************************
 
 		rc = rfs->CloseRecordScan();
 		if (rc != OK) {return rc; }
-		index_no = 2;
+
+		// MEXRI EDW EXOUME VREI OTI 8ELOUME NAME=ILIAS KAI OTI YPARXEI
+		// INDEXER GIA TO NAME. ETSI ANOIGOUME TO INDEX ME ID=1 KAI PAME
+		// NA DIAVASOUME. TO ih, comp KAI conditionValue PAIRNOUN SWSTES
+		// TIMES EPOMENWS TO KEY(conditionValue) EINAI SWSTO.
 		if(index_no != -1){	//IN CASE OF INDEX									//***********************************
 																				//**	ean exei index to attribute, 
 			// Open index file													//**	anoigw to arxeio tou index
@@ -267,7 +270,8 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 			rc = is->OpenIndexScan(ih, comp, conditionValue);					//**
 			if (rc != OK) { return rc; }										//**
 																				//**
-			int i = 0;															//**
+			int i = 0;	
+			// TO PARAKATW PETAEI TO EXCEPTION
 			while( is->GetNextEntry(rid) != INXM_FSEOF ){						//**	kai ka8e record pou epistrefei
 				ridsArray[i] = rid;												//**	to apo8hkeyw ston pinaka
 				i++;															//**	PETAEI EXCEPTION

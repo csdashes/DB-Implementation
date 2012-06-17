@@ -443,7 +443,7 @@ void testSSQLM() {
 	
 
 
-		delete dmlm;
+	delete dmlm;
 	delete im2;
 	delete sdm2;
 	delete rfm2;
@@ -459,11 +459,12 @@ void testSSQLM() {
 	SSQLM_DML_Manager *dmlm3 = new SSQLM_DML_Manager(rfm3,im3,"testingDB");
 
 
-
+	// MEXRI EDW OLA DOULEUOUN SWSTA. TO PROVLHMA EINAI OTAN KALEITAI TWRA H WHERE.
+	// ANOIKSE TO SSQLM_DML_MANAGER.CPP GRAMMH 270
 	
 	REM_RecordID rids[50];
 	int slott;
-	dmlm3->Where("table1","age>20 AND name=ILIAS",rids);
+	dmlm3->Where("table1","name=ILIAS AND age>20",rids);	
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	for(int lola = 0; lola <50; lola++){		//*********************************
