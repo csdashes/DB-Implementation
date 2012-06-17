@@ -48,7 +48,7 @@ typedef enum
 	INXM_FSOPEN,
 	INXM_FSEOF,
 	INXM_FSCLOSED,
-
+    INXM_ISEMPTY,
 
 
 	// return codes for SYSTEM MODULE (SYSM)

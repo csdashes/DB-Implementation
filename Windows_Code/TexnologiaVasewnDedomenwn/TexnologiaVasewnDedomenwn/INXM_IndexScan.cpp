@@ -234,8 +234,15 @@ t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
 		do {
 			ReadNode(leafPageHandle, runner, node);
 			runner++;
-		} while (KeyCmp(node.key, this->key) != 0);
+			printf("%s\n",(char*)node.key);
+			printf("%s\n",(char*)this->key);
+		} while (KeyCmp(node.key, this->key) != 0 && runner < leafInitPageHeader.nItems);
 		
+		if (runner >= leafInitPageHeader.nItems) {
+			this->flag = true;
+			return(INXM_FSEOF);
+		}
+
 		if (this->compOp == LE_OP || this->compOp == GE_OP) {
 			runner--;
 		}

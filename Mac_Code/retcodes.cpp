@@ -46,6 +46,7 @@ void DisplayReturnCode(t_rc rc)
 	case INXM_FSOPEN:				msg = "INXM FileScan is already open"; break;
 	case INXM_FSCLOSED:				msg = "INXM FileScan is closed"; break;
 	case INXM_FSEOF:				msg = "INXM FileScan End Of File (EOF) has been reached."; break;
+    case INXM_ISEMPTY:              msg = "INXM is empty"; break;
 		
 	default: msg = "Unknown return code."; break;
 

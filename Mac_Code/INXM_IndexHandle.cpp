@@ -198,6 +198,50 @@ t_rc INXM_IndexHandle::FindLeaf(int rootPageID, void *key, STORM_PageHandle &lea
 	return(OK);
 }
 
+t_rc INXM_IndexHandle::FindLeafWithParent(int rootPageID, void *key, STORM_PageHandle &leafPageHandle, STORM_PageHandle &parentPageHandle) {
+	t_rc rc;
+	
+	int nodeRunner = rootPageID;
+    int parentRunner = rootPageID;
+	INXM_Node node;
+    
+	INXM_InitPageHeader initPageHeader;
+	INXM_NodePageHeader nodePageHeader;
+	
+	LoadNodeHeaders(nodeRunner, initPageHeader, nodePageHeader);
+	
+	while (!nodePageHeader.isLeaf) {
+		int keyRunner = 0;
+		
+		while (keyRunner < initPageHeader.nItems) {
+			rc = ReadNode(nodeRunner, keyRunner, node);
+			if (rc != OK) { return rc; }
+			
+			if (KeyCmp(key,node.key) > 0) {
+				keyRunner++;
+			} else {
+				break;
+			}
+		}
+		
+		nodeRunner = node.left;
+		if (keyRunner == initPageHeader.nItems) {
+            parentRunner = nodeRunner;
+			nodeRunner   = nodePageHeader.next;
+		}
+		rc = LoadNodeHeaders(nodeRunner, initPageHeader, nodePageHeader);
+		if (rc != OK) { return rc; }
+	}
+	
+	rc = this->sfh.GetPage(nodeRunner, leafPageHandle);
+	if (rc != OK) { return rc; }
+    
+    rc = this->sfh.GetPage(parentRunner, parentPageHandle);
+	if (rc != OK) { return rc; }
+	
+	return(OK);
+}
+
 t_rc INXM_IndexHandle::FindAndAppend(int rootPageID, void *key, const REM_RecordID &rid) {
 	t_rc rc;
 	
@@ -781,43 +825,68 @@ t_rc INXM_IndexHandle::InsertIntoLeafAfterSplitting(int rootID, STORM_PageHandle
 	return(OK);
 }
 
-t_rc INXM_IndexHandle::InsertEntry(void *pData, const REM_RecordID &rid) {
+t_rc INXM_IndexHandle::InsertEntry(void *key, const REM_RecordID &rid) {
 	t_rc rc;
 		
 	/* Tree does not exist yet.
 	 * Start a new tree.
 	 */	
 	if (this->inxmFileHeader.treeRoot == 0) {
-		return StartNewTree(pData, rid);
+		return StartNewTree(key, rid);
 	}
 	
 	/* If tree already exists. */
 	
 	/* If key exists, append. */
-	rc = FindAndAppend(this->inxmFileHeader.treeRoot, pData, rid);
+	rc = FindAndAppend(this->inxmFileHeader.treeRoot, key, rid);
 	if (rc == OK) { return rc; }
 
 	/* Else add new node and data to b+ tree. */
 	STORM_PageHandle leafPageHandle;
-	rc = FindLeaf(this->inxmFileHeader.treeRoot, pData, leafPageHandle);
+	rc = FindLeaf(this->inxmFileHeader.treeRoot, key, leafPageHandle);
 	if (rc != OK) { return rc; }
 	
 	/* Case: leaf has room for key and pointer.
 	 */
 	
 	if (LeafHasRoom(leafPageHandle)) {
-		return InsertIntoLeaf(leafPageHandle, pData, rid);
+		return InsertIntoLeaf(leafPageHandle, key, rid);
 	}
 	
 	/* Case: leaf must be split.
 	 */
 	
-	return InsertIntoLeafAfterSplitting(this->inxmFileHeader.treeRoot, leafPageHandle, pData, rid);
+	return InsertIntoLeafAfterSplitting(this->inxmFileHeader.treeRoot, leafPageHandle, key, rid);
 	
 	return(OK);
 }
 
-t_rc INXM_IndexHandle::DeleteEntry(void *pData, const REM_RecordID &rid) {
+t_rc INXM_IndexHandle::DeleteEntry(void *key, const REM_RecordID &rid) {
+    t_rc rc;
+    
+	/* Tree does not exist yet.
+	 * Just exit.
+	 */	
+	if (this->inxmFileHeader.treeRoot == 0) {
+		return(INXM_ISEMPTY);
+	}
+	
+	/* If tree already exists. */
+    /* Find leaf and parent node pages. */
+    STORM_PageHandle leafPageHandle, parentPageHandle;
+    
+    rc = FindLeafWithParent(this->inxmFileHeader.treeRoot, key, leafPageHandle, parentPageHandle);
+    if (rc != OK) { return rc; }
+    
+    int parentPageID;
+    rc = parentPageHandle.GetPageID(parentPageID);
+    if (rc != OK) { return rc; }
+    
+    /* If parent node is the root. */
+    if (parentPageID == this->inxmFileHeader.treeRoot) {
+        <#statements#>
+    }
+    
 	return(OK);
 }
 
