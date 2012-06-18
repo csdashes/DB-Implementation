@@ -422,17 +422,17 @@ void testSSQLM() {
 
 	//test DML part
 
-	char pathname[255];
-	REM_RecordFileHandle *rfh2 = new REM_RecordFileHandle();
-	_snprintf_s(pathname,sizeof(pathname),"testingDB/attr.met");
-	rc = rfm2->OpenRecordFile(pathname,*rfh2);
-	REM_RecordFileScan *rfs = new REM_RecordFileScan();
-	rfs->OpenRecordScan(*rfh2,TYPE_STRING,10, 0, EQ_OP, "table1;age");
-	REM_RecordHandle rh2;
-	rfs->GetNextRecord(rh2);
-	char *pDataa;
-	rh2.GetData(pDataa);
-	cout<<pDataa<<endl;
+	//char pathname[255];
+	//REM_RecordFileHandle *rfh2 = new REM_RecordFileHandle();
+	//_snprintf_s(pathname,sizeof(pathname),"testingDB/attr.met");
+	//rc = rfm2->OpenRecordFile(pathname,*rfh2);
+	//REM_RecordFileScan *rfs = new REM_RecordFileScan();
+	//rfs->OpenRecordScan(*rfh2,TYPE_STRING,10, 0, EQ_OP, "table1;age");
+	//REM_RecordHandle rh2;
+	//rfs->GetNextRecord(rh2);
+	//char *pDataa;
+	//rh2.GetData(pDataa);
+	//cout<<pDataa<<endl;
 
 	SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm2,im2,"testingDB");
 	char record[24];
@@ -464,12 +464,12 @@ void testSSQLM() {
 	
 	REM_RecordID rids[50];
 	int slott;
-	dmlm3->Where("table1","name=ILIAS__________ AND age>20",rids);	
+	dmlm3->Where("table1","name=ILIAS__________ AND age>21",rids);	
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	for(int lola = 0; lola <50; lola++){		//*********************************
 		rids[lola].GetSlot(slott);				//**	dokimh ean douleuei h where.
-		cout<<slott<<endl;						//**	paparia.
+		//cout<<slott<<endl;						//**	paparia.
 	}											//*********************************
 	system("pause");
 }

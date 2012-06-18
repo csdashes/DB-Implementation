@@ -95,7 +95,7 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 			rh.GetData(pp);
 
 			//Get the index id, offset, type and size of the attribute
-			rc = GetAttrInfo(pp,offset,type,size,indexNo);	//6 because we want the 6th token
+			rc = GetAttrInfo(pp,offset,type,size,indexNo);
 
 			//if there is index for this attribute
 			if( indexNo != -1 ){
@@ -196,7 +196,7 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 
 	for(int iii=0; iii< conditionsList.size(); iii++){					//*****************************************
 		
-		// Get the comparison										//**	kai ton telesth sygkrishs
+		// Get the comparison											//**	kai ton telesth sygkrishs
 			if(strstr(conditionsList[iii],"<="))		//case of <=	//**
 				comp = LE_OP;											//**
 			else if(strstr(conditionsList[iii],">="))	//case of >=	//**
@@ -267,12 +267,16 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 			if (rc != OK) { return rc; }										//**
 																				//**
 			INXM_IndexScan *is = new INXM_IndexScan();							//**
+
 			rc = is->OpenIndexScan(ih, comp, conditionValue);					//**
 			if (rc != OK) { return rc; }										//**
 																				//**
 			int i = 0;	
+			int slott;
 			// TO PARAKATW PETAEI TO EXCEPTION
 			while( is->GetNextEntry(rid) != INXM_FSEOF ){						//**	kai ka8e record pou epistrefei
+				rid.GetSlot(slott);
+				cout<<slott<<", "<<i<<endl;
 				ridsArray[i] = rid;												//**	to apo8hkeyw ston pinaka
 				i++;															//**	PETAEI EXCEPTION
 			}																	//**

@@ -53,7 +53,8 @@ typedef enum
 
 
 	// return codes for SYSTEM MODULE (SYSM)
-
+	SYSM_OTHERDBISOPEN,
+	SYSM_DBCLOSED
 
 
 
