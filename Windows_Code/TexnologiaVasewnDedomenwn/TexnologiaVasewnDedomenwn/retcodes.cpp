@@ -38,23 +38,17 @@ void DisplayReturnCode(t_rc rc)
 	case REM_FSCLOSED:			msg = "REM FileScan is closed"; break;
 	case REM_FSEOF:				msg = "REM FileScan End Of File (EOF) has been reached."; break;
 			
-	/* return codes for INDEX MODULE (INXM) */
+	/* return codes for RECORD MODULE (REM) */
 		
-	case INXM_INVALIDINDEX:			msg = "Invalid index, maybe no records inside?"; break;
 	case INXM_INVALIDRECSIZE:		msg = "Invalid record size"; break;
 	case INXM_IHCLOSED:				msg = "INXM handle closed"; break;
 	case INXM_KEY_NOT_FOUND:		msg = "Key not found in b+ tree"; break;
 	case INXM_FSOPEN:				msg = "INXM FileScan is already open"; break;
 	case INXM_FSCLOSED:				msg = "INXM FileScan is closed"; break;
 	case INXM_FSEOF:				msg = "INXM FileScan End Of File (EOF) has been reached."; break;
-
-	/* return codes for SYSTEM MODULE (SYSM) */
-
-	case SYSM_OTHERDBISOPEN:		msg = "Another database is already open"; break;
-	case SYSM_DBCLOSED:				msg = "The database is already closed"; break;
-		
-
-		
+    case INXM_ISEMPTY:              msg = "INXM is empty"; break;
+	case INXM_INVALIDINDEX:         msg = "INXM has no root"; break;
+            
 	default: msg = "Unknown return code."; break;
 
 	}

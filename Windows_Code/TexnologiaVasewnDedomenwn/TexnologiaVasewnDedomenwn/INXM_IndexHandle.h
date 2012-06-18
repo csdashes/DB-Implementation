@@ -22,16 +22,19 @@ private:
 	bool LeafHasRoom(STORM_PageHandle pageHandle);
 	int Cut(int length);
 	int KeyCmp(void *key,void *key2);
-	t_rc LoadInitHeaders(STORM_PageHandle pageHandle, INXM_InitPageHeader &initPageHeader);
+
+    t_rc FindLeaf(int rootPageID, void *key, STORM_PageHandle &leafPageHandle);
+	t_rc FindAndAppend(int rootPageID, void *key, const REM_RecordID &rid);
+    t_rc FindLeafWithParent(int rootPageID, void *key, STORM_PageHandle &leafPageHandle, STORM_PageHandle &parentPageHandle);
+
+    t_rc LoadInitHeaders(STORM_PageHandle pageHandle, INXM_InitPageHeader &initPageHeader);
 	t_rc LoadNodeHeaders(int pageID, INXM_InitPageHeader &initPageHeader, INXM_NodePageHeader &nodePageHeader);
 	t_rc LoadNodeHeaders(STORM_PageHandle pageHandle, INXM_InitPageHeader &initPageHeader, INXM_NodePageHeader &nodePageHeader);
 	t_rc UpdateNodeHeaders(STORM_PageHandle pageHandle, INXM_InitPageHeader initPageHeader, INXM_NodePageHeader nodePageHeader);
 	t_rc ReadNode(int page, int slot, INXM_Node &node);
 	t_rc ReadNode(STORM_PageHandle pageHandle, int slot, INXM_Node &node);
 	t_rc ReadData(STORM_PageHandle pageHandle, int slot, INXM_Data &data);
-	t_rc FindLeaf(int rootPageID,void *pData, STORM_PageHandle &leafPageHandle);
-	t_rc FindAndAppend(int rootPageID, void *key, const REM_RecordID &rid);
-	t_rc EditData(STORM_PageHandle pageHandle, int slot, INXM_Data data);
+    t_rc EditData(STORM_PageHandle pageHandle, int slot, INXM_Data data);
 	t_rc EditNode(STORM_PageHandle pageHandle, int slot, INXM_Node node);
 	t_rc WriteNode(STORM_PageHandle pageHandle, int insertPoint, void *key, int left, int slot);
 	t_rc WriteNode(STORM_PageHandle pageHandle, void *key, int left, int slot);
@@ -43,13 +46,16 @@ private:
 	t_rc InsertIntoNoLeaf(STORM_PageHandle parentPage, int left_index, void* key, int rightPageID);
 	t_rc StartNewTree(void *pData, const REM_RecordID &rid);
 	t_rc InsertIntoLeafAfterSplitting(int rootID, STORM_PageHandle leafPageHandle, void *key, const REM_RecordID &rid);
+    
+    t_rc DeleteLeafEntry(STORM_PageHandle leafPageHandle, const REM_RecordID &rid);
+    t_rc DeleteNodeEntry(STORM_PageHandle parentPageHandle, void *key);
 	
 public:
 	INXM_IndexHandle(); 
 	~INXM_IndexHandle();
 	
-	t_rc InsertEntry(void *pData, const REM_RecordID &rid); 
-	t_rc DeleteEntry(void *pData, const REM_RecordID &rid); 
+	t_rc InsertEntry(void *key, const REM_RecordID &rid); 
+	t_rc DeleteEntry(void *key, const REM_RecordID &rid); 
 	t_rc FlushPages();
 	
 	void debug();
