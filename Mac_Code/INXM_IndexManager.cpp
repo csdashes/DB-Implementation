@@ -17,7 +17,7 @@ t_rc INXM_IndexManager::CreateIndex(const char *fname, int indexNo, t_attrType a
 	}
 	
 	char buffer[128];
-	_snprintf_s(buffer, sizeof(buffer), "%s.%d", fname, indexNo);
+	snprintf(buffer, sizeof(buffer), "%s.%d", fname, indexNo);
 
 	/* Create file by using STORM */
 	t_rc rc = this->sm->CreateFile(buffer);
@@ -78,7 +78,7 @@ t_rc INXM_IndexManager::CreateIndex(const char *fname, int indexNo, t_attrType a
 
 t_rc INXM_IndexManager::DestroyIndex(const char *fname, int indexNo) {
 	char buffer[128];
-	_snprintf_s(buffer, sizeof(buffer), "%s.%d", fname, indexNo);
+	snprintf(buffer, sizeof(buffer), "%s.%d", fname, indexNo);
 
 	return this->sm->DestroyFile(buffer);
 	return(OK);
@@ -91,7 +91,7 @@ t_rc INXM_IndexManager::OpenIndex(const char *fname, int indexNo, INXM_IndexHand
 	}
 	
 	char buffer[128];
-	_snprintf_s(buffer, sizeof(buffer), "%s.%d", fname, indexNo);
+	snprintf(buffer, sizeof(buffer), "%s.%d", fname, indexNo);
 	/* Open file with STORM and assign a STORM File Handler to INXM Handler given in arguments */
 	t_rc rc = this->sm->OpenFile(buffer, ih.sfh);
 	if (rc != OK) { return rc; }

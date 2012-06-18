@@ -349,6 +349,7 @@ t_rc INXM_IndexHandle::EditNode(STORM_PageHandle pageHandle, int slot, INXM_Node
 	if (rc != OK) { return rc; }
 	
 	memcpy(&dataPageData[INXM_INITPAGEHEADER_SIZE+INXM_NODEPAGEHEADER_SIZE+(slot*(INXM_NODE_SIZE+this->inxmFileHeader.attrLength))], &node, INXM_NODE_SIZE+this->inxmFileHeader.attrLength);
+    memcpy(&dataPageData[INXM_INITPAGEHEADER_SIZE+INXM_NODEPAGEHEADER_SIZE+(slot*(INXM_NODE_SIZE+this->inxmFileHeader.attrLength))+INXM_NODE_SIZE], node.key, this->inxmFileHeader.attrLength);
 	
 	return(OK);
 }
@@ -861,6 +862,69 @@ t_rc INXM_IndexHandle::InsertEntry(void *key, const REM_RecordID &rid) {
 	return(OK);
 }
 
+t_rc INXM_IndexHandle::DeleteLeafEntry(STORM_PageHandle leafPageHandle, const REM_RecordID &rid) {
+    
+    return(OK);
+}
+
+t_rc INXM_IndexHandle::DeleteNodeEntry(STORM_PageHandle parentPageHandle, void *key) {
+    t_rc rc;
+    
+    int keyRunner = 0;
+    
+    INXM_Node node;
+    
+	INXM_InitPageHeader initPageHeader;
+	INXM_NodePageHeader nodePageHeader;
+	
+	LoadNodeHeaders(parentPageHandle, initPageHeader, nodePageHeader);
+
+    while (keyRunner < initPageHeader.nItems) {
+        rc = ReadNode(parentPageHandle, keyRunner, node);
+        if (rc != OK) { return rc; }
+        
+        if (KeyCmp(key,node.key) > 0) {
+            keyRunner++;
+        } else {
+            break;
+        }
+    }
+    
+    INXM_Node runNode;
+	for (int i = keyRunner; i < (initPageHeader.nItems-1); i++) {
+		ReadNode(parentPageHandle, i+1, runNode);
+		EditNode(parentPageHandle, i, runNode);
+	}
+    
+    /* Reduce number of nodes and update headers. */
+    char *nodePageData;
+	
+	rc = parentPageHandle.GetDataPtr(&nodePageData);
+	if (rc != OK) { return rc; }
+    
+    /* Update page header. */
+	initPageHeader.nItems--;
+	
+	memcpy(nodePageData, &initPageHeader, INXM_INITPAGEHEADER_SIZE);
+	
+	int pageID;
+	rc = parentPageHandle.GetPageID(pageID);
+	if (rc != OK) { return rc; }
+	
+	/* Mark the page as dirty because we modified it */
+	rc = this->sfh.MarkPageDirty(pageID);
+	if (rc != OK) { return rc; }
+	
+	rc = this->sfh.FlushPage(pageID);
+	if (rc != OK) { return rc; }
+	
+	/* Unpin the page */
+	rc = this->sfh.UnpinPage (pageID);
+	if (rc != OK) { return rc; }
+
+    return(OK);
+}
+
 t_rc INXM_IndexHandle::DeleteEntry(void *key, const REM_RecordID &rid) {
     t_rc rc;
     
@@ -884,7 +948,13 @@ t_rc INXM_IndexHandle::DeleteEntry(void *key, const REM_RecordID &rid) {
     
     /* If parent node is the root. */
     if (parentPageID == this->inxmFileHeader.treeRoot) {
-        <#statements#>
+        /* Got to leafs and check if there is a linked list. */
+        rc = DeleteLeafEntry(leafPageHandle, rid);
+        if (rc != OK) { return rc; }
+        
+        /* Delete key node. */
+        rc = DeleteNodeEntry(parentPageHandle, key);
+        if (rc != OK) { return rc; }
     }
     
 	return(OK);

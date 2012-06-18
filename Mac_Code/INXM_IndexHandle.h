@@ -46,6 +46,9 @@ private:
 	t_rc InsertIntoNoLeaf(STORM_PageHandle parentPage, int left_index, void* key, int rightPageID);
 	t_rc StartNewTree(void *pData, const REM_RecordID &rid);
 	t_rc InsertIntoLeafAfterSplitting(int rootID, STORM_PageHandle leafPageHandle, void *key, const REM_RecordID &rid);
+    
+    t_rc DeleteLeafEntry(STORM_PageHandle leafPageHandle, const REM_RecordID &rid);
+    t_rc DeleteNodeEntry(STORM_PageHandle parentPageHandle, void *key);
 	
 public:
 	INXM_IndexHandle(); 

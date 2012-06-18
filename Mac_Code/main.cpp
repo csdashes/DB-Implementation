@@ -330,7 +330,12 @@ void testINXM() {
 //	}
 	
 	ih.debug();
+    
+    rc = ih.DeleteEntry(key2, rid2);
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 	
+    ih.debug();
+    
 	//================================================================================	
 	
 	rc = imgr->CloseIndex(ih);
