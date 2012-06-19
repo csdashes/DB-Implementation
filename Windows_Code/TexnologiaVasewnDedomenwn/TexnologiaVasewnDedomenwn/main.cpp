@@ -439,6 +439,11 @@ void testSSQLM() {
 	strcpy(record,"1___ILIAS__________22__");
 
 	rc = dmlm->Insert("table1",record);
+
+	char record2[24];
+	strcpy(record2,"2___TASOS__________25__");
+
+	rc = dmlm->Insert("table1",record2);
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 	
 
@@ -464,7 +469,7 @@ void testSSQLM() {
 	
 	REM_RecordID rids[50];
 	int slott;
-	dmlm3->Where("table1","name=ILIAS__________ AND age>21",rids);	
+	dmlm3->Where("table1","age>20 AND name=TASOS__________",rids);	
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	for(int lola = 0; lola <50; lola++){		//*********************************

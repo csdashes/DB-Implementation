@@ -75,6 +75,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="components.h" />
+    <ClInclude Include="hash_map.h" />
     <ClInclude Include="INXM.h" />
     <ClInclude Include="INXM_Components.h" />
     <ClInclude Include="INXM_IndexHandle.h" />
@@ -91,6 +92,8 @@
     <ClInclude Include="SSQLM.h" />
     <ClInclude Include="SSQLM_DDL_Manager.h" />
     <ClInclude Include="SSQLM_DML_Manager.h" />
+    <ClInclude Include="stl_algobase.h" />
+    <ClInclude Include="stl_hashtable.h" />
     <ClInclude Include="STORM.h" />
     <ClInclude Include="STORM_BufferManager.h" />
     <ClInclude Include="STORM_FileHandle.h" />

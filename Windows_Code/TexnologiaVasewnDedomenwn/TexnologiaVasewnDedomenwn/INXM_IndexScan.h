@@ -8,8 +8,10 @@
 class INXM_IndexScan { 
 private:
 	bool flag;
-	
+
 	STORM_FileHandle *sfh;
+
+	STORM_PageHandle tmpLeafPageHandle;
 	
 	STORM_PageHandle rootPageHandle;
 	

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
+#include <hash_map>
 using namespace std;
 
 SSQLM_DML_Manager::SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im,char *dbName){
@@ -154,6 +155,7 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 	REM_RecordID rid;
 
 	vector <char*> conditionsList; // empty
+	vector <char*> conditionsListWithoutIndex; // empty
 
 	int condLength = strlen(conditions);
 	char *str = (char*)malloc(condLength);
@@ -163,11 +165,13 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 	int offset = 0;
 	char condition[50]; //mia syn8hkh
 	int i = 0;
-	char *conditionAttribute, *conditionValue;
-	t_compOp comp;
+	char *conditionAttribute = NULL;
+	char *conditionValue = NULL;
+	t_compOp comp = NO_OP;
 	char *rdata;
 	char * token;
 	int index_no;
+	t_rc rc;
 
 	// Open attr.met file
 	//_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
@@ -194,28 +198,14 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 	//add the last condition in the list			//**
 	conditionsList.push_back(pointer);				//************************************************
 
-	for(int iii=0; iii< conditionsList.size(); iii++){					//*****************************************
+	hash_map<int, REM_RecordID> rids;
+	bool isFirstCondition = true;
+
+	for(int iii=0; iii< conditionsList.size(); iii++){	
+
+		rc = GetConditionInfo(conditionsList[iii],conditionAttribute,comp,conditionValue);
+		if (rc != OK) {return rc; }	
 		
-		// Get the comparison											//**	kai ton telesth sygkrishs
-			if(strstr(conditionsList[iii],"<="))		//case of <=	//**
-				comp = LE_OP;											//**
-			else if(strstr(conditionsList[iii],">="))	//case of >=	//**
-				comp = GE_OP;											//**
-			else if(strstr(conditionsList[iii],"!="))	//case of !=	//**
-				comp = NE_OP;											//**
-			else if(strstr(conditionsList[iii],"<"))	//case of <		//**
-				comp = LT_OP;											//**
-			else if(strstr(conditionsList[iii],">"))	//case of >		//**
-				comp = GT_OP;											//**
-			else if(strstr(conditionsList[iii],"="))	//case of =		//**
-				comp = EQ_OP;											//*******************************************
-
-		//**	Gia ka8e condition, pairnw to 
-		conditionAttribute = strtok (conditionsList[iii],"><=!");		//**	attribute,
-		conditionValue = strtok (NULL, "><=!");							//**	to value
-																		//**
-			
-
 		// Calculate the length of "tName;attrName"											//***************************************
 		int tNameLength = strlen(tName);													//**	Sto arxeio attr.met psaxnw na dw
 		int attrNameLength = strlen(conditionAttribute);									//**	an to sygkekrimeno attribute
@@ -228,7 +218,7 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 		strcat(tableNattr,conditionAttribute);												//**
 																							//**
 		// Find the record																	//**
-		t_rc rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,finalLength, 0, EQ_OP, tableNattr);		//**
+		t_rc rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,finalLength, 0, EQ_OP, tableNattr);//
 		if (rc != OK) {return rc; }															//**
 																							//**
 		rc = rfs->GetNextRecord(rh);														//**
@@ -236,8 +226,8 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 																							//**
 		int indexNo;																		//**
 		//Get the index id																	//**
-		rc = rh.GetData(rdata);																	//**
-		
+		rc = rh.GetData(rdata);																//**
+																							//**
 		token = strtok (rdata,";");					//split the recordData					//**
 																							//**
 		// Retrieve the index id															//**
@@ -253,84 +243,92 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 		rc = rfs->CloseRecordScan();
 		if (rc != OK) {return rc; }
 
-		// MEXRI EDW EXOUME VREI OTI 8ELOUME NAME=ILIAS KAI OTI YPARXEI
-		// INDEXER GIA TO NAME. ETSI ANOIGOUME TO INDEX ME ID=1 KAI PAME
-		// NA DIAVASOUME. TO ih, comp KAI conditionValue PAIRNOUN SWSTES
-		// TIMES EPOMENWS TO KEY(conditionValue) EINAI SWSTO.
 		if(index_no != -1){	//IN CASE OF INDEX									//***********************************
 																				//**	ean exei index to attribute, 
 			// Open index file													//**	anoigw to arxeio tou index
 			INXM_IndexHandle ih;												//**
-			_snprintf_s(pathname2,sizeof(pathname),"%s/%s",dbName,tName);			//**
+			_snprintf_s(pathname2,sizeof(pathname),"%s/%s",dbName,tName);		//**
 																				//**
 			rc = im->OpenIndex(pathname2,index_no,ih);							//**
 			if (rc != OK) { return rc; }										//**
 																				//**
 			INXM_IndexScan *is = new INXM_IndexScan();							//**
-
-			rc = is->OpenIndexScan(ih, comp, conditionValue);					//**
+			int cndV = atoi(conditionValue);
+			int *key1 = new int(cndV);
+			rc = is->OpenIndexScan(ih, comp, key1);								//**
 			if (rc != OK) { return rc; }										//**
 																				//**
 			int i = 0;	
+			int page;
 			int slott;
-			// TO PARAKATW PETAEI TO EXCEPTION
-			while( is->GetNextEntry(rid) != INXM_FSEOF ){						//**	kai ka8e record pou epistrefei
-				rid.GetSlot(slott);
-				cout<<slott<<", "<<i<<endl;
-				ridsArray[i] = rid;												//**	to apo8hkeyw ston pinaka
-				i++;															//**	PETAEI EXCEPTION
-			}																	//**
-		}																		//************************************
-//	else{	//IN CASE THERE IS NO INDEX
-		
-		//cout<<conditionsList[iii]<<endl;
-		break;
+
+			if(isFirstCondition){													//	dhmiourgeitai o hashmap gia to prwto condition
+
+				while( is->GetNextEntry(rid) != INXM_FSEOF ){						//	kai ka8e record pou epistrefei
+				
+					rid.GetPageID(page);
+					rid.GetSlot(slott);
+					rids[page*10000+slott] = rid;									
+
+					//cout<<"slott->"<<slott<<endl;
+					//ridsArray[i] = rid;											
+					i++;															
+				}	
+				isFirstCondition = false;
+			}		
+			else{
+				hash_map<int, REM_RecordID> intersectionRIDs;
+
+				while( is->GetNextEntry(rid) != INXM_FSEOF ){						//	kai ka8e record pou epistrefei
+				
+					rid.GetPageID(page);
+					rid.GetSlot(slott);
+					//rids[page*10000+slott] = rid;		
+					if(rids.count(page*10000+slott)){
+						intersectionRIDs[page*10000+slott] = rid;
+					}
+
+					//cout<<"slott->"<<slott<<endl;
+					//ridsArray[i] = rid;											
+					i++;															
+				}
+				rids.swap(intersectionRIDs);
+				//hash_map<int, REM_RecordID> rids(intersectionRIDs);
+			}
+			hash_map <int, REM_RecordID>::iterator rids_Iter;
+			int sl;
+			for ( rids_Iter = rids.begin( ); rids_Iter != rids.end( ); rids_Iter++ ){
+				rids_Iter->second.GetSlot(sl);
+				cout<<sl<<endl;
+			}
+			cout<< "." << endl;
+		}
+		else{	//IN CASE THERE IS NO INDEX
+			conditionsListWithoutIndex.push_back(conditionsList[iii]);		// apo8hkeyse ta conditions se mia lista
+		}
+	}
+
+	STORM_StorageManager *stormgr3 = new STORM_StorageManager();
+	REM_RecordFileManager *remrfm = new REM_RecordFileManager(stormgr3);
+	REM_RecordFileHandle *remrfh = new REM_RecordFileHandle();
+	REM_RecordHandle remrh;
+	char *pdata;
+	vector <char*> recordsFromIndexes;
+	hash_map <int, REM_RecordID>::iterator rids_Iter;
+
+	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
+	rc = remrfm->OpenRecordFile(pathname,*remrfh);
+	if (rc != OK) { return rc; }
+
+	for ( rids_Iter = rids.begin( ); rids_Iter != rids.end( ); rids_Iter++ ){	// vres ta records sta opoia antistoixoun h tomh twn rids twn indexes
+		rc = remrfh->ReadRecord(rids_Iter->second,remrh);
+		if (rc != OK) {return rc; }	
+
+		remrh.GetData(pdata);
+		recordsFromIndexes.push_back(pdata);									// apo8hkeyse ta se mia lista
 	}
 
 
-//	// Calculate the length of "tName;attrName"
-//	int tNameLength = strlen(tName);
-//	int attrNameLength = strlen(conditionAttribute);
-//	int finalLength = tNameLength + attrNameLength + 1;
-//
-//	// Build the "tName;attrName"
-//	char *tableNattr;
-//	strcpy(tableNattr,tName);
-//	strcat(tableNattr,";");
-//	strcat(tableNattr,conditionAttribute);
-//
-//	// Find the record
-//	rc = rfs->OpenRecordScan(*rfh,TYPE_STRING,finalLength, 0, EQ_OP, tableNattr);
-//	if (rc != OK) {return rc; }
-//
-//	rc = rfs->GetNextRecord(rh);
-//	if (rc != OK) {return rc; }
-//
-//	int indexNo;
-//	//Get the index id
-//	rc = GetAttrInfo(rh,indexNo,6);	// 6 is the position of the index field
-//	if (rc != OK) {return rc; }
-//
-//	rc = rfs->CloseRecordScan();
-//	if (rc != OK) {return rc; }
-//
-//	if(indexNo != -1){	//IN CASE OF INDEX
-//		// Open index file
-//		INXM_IndexHandle ih;
-//		_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
-//
-//		rc = im->OpenIndex(pathname,indexNo,ih);
-//		if (rc != OK) { return rc; }
-//
-//		INXM_IndexScan *is = new INXM_IndexScan();
-//		rc = is->OpenIndexScan(ih, compOp, value);
-//		if (rc != OK) { return rc; }
-//
-//		int i = 0;
-//		while( is->GetNextEntry(rid) != STORM_EOF ){
-//			ridsArray[i] = rid;
-//		}
-//	}
 //	else{	//IN CASE THERE IS NO INDEX
 //		// Open the table file
 //		_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
@@ -400,6 +398,28 @@ t_rc SSQLM_DML_Manager::OpenAttrmet(char *dbName){
 	_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
 	t_rc rc = rfm->OpenRecordFile(pathname,*attrmet);
 	if (rc != OK) { return rc; }
+
+	return OK;
+}
+
+t_rc SSQLM_DML_Manager::GetConditionInfo(char *condition, char *&conditionAttribute, t_compOp &comp, char *&conditionValue){
+	
+	// Get the comparison											
+	if(strstr(condition,"<="))		//case of <=	
+		comp = LE_OP;											
+	else if(strstr(condition,">="))	//case of >=	
+		comp = GE_OP;											
+	else if(strstr(condition,"!="))	//case of !=	
+		comp = NE_OP;											
+	else if(strstr(condition,"<"))	//case of <		
+		comp = LT_OP;											
+	else if(strstr(condition,">"))	//case of >		
+		comp = GT_OP;											
+	else if(strstr(condition,"="))	//case of =		
+		comp = EQ_OP;											
+
+	conditionAttribute = strtok (condition,"><=!");		
+	conditionValue = strtok (NULL, "><=!");							
 
 	return OK;
 }

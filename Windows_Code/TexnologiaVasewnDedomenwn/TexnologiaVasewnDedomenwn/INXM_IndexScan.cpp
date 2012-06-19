@@ -204,6 +204,8 @@ t_rc INXM_IndexScan::OpenIndexScan(const INXM_IndexHandle &ih, t_compOp compOp, 
 }
 
 t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
+	
+
 	/* Check if file scan is not open. */
 	if (!this->isOpen) { return(INXM_FSCLOSED); }
 	t_rc rc;
@@ -224,21 +226,21 @@ t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
 	
 	/* Get key node and the leaf page. */
 	if (this->lastLeafPageHandle == NULL) {
-		STORM_PageHandle leafPageHandle;
-		rc = FindLeaf(this->rootPageHandle, this->key, leafPageHandle);
+		
+		rc = FindLeaf(this->rootPageHandle, this->key, this->tmpLeafPageHandle);
 		if (rc != OK) { return rc; }
 		
-		rc = LoadNodeHeaders(leafPageHandle, leafInitPageHeader, leafNodePageHeader);
+		rc = LoadNodeHeaders(tmpLeafPageHandle, leafInitPageHeader, leafNodePageHeader);
 		if (rc != OK) { return rc; }
 		
 		do {
-			ReadNode(leafPageHandle, runner, node);
+			ReadNode(tmpLeafPageHandle, runner, node);
 			runner++;
-			printf("%s\n",(char*)node.key);
-			printf("%s\n",(char*)this->key);
+			//printf("%s\n",(char*)node.key);
+			//printf("%s\n",(char*)this->key);
 		} while (KeyCmp(node.key, this->key) != 0 && runner < leafInitPageHeader.nItems);
 		
-		if (runner >= leafInitPageHeader.nItems) {
+		if (runner > leafInitPageHeader.nItems) {
 			this->flag = true;
 			return(INXM_FSEOF);
 		}
@@ -247,7 +249,7 @@ t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
 			runner--;
 		}
 		
-		this->lastLeafPageHandle = &leafPageHandle;
+		this->lastLeafPageHandle = &tmpLeafPageHandle;
 		this->lastKeySlot = runner;		
 	}
 		
@@ -288,7 +290,7 @@ t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
 			this->nextPageID = data.nextPageID;
 			this->nextSlot = data.nextSlot;
 				
-			if (leafNodePageHeader.next == 0) {
+			if (leafNodePageHeader.next == 0 && this->lastKeySlot == leafInitPageHeader.nItems) {
 				this->flag = true;
 			}
 			
@@ -305,8 +307,10 @@ t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
 				this->lastKeySlot--;
 			}
 			
+			this->lastKeySlot--;
 			ReadNode(*this->lastLeafPageHandle, this->lastKeySlot, node);
-			
+			this->lastKeySlot++;
+
 			ReadData(node.left, node.slot, data);
 			
 			rid.SetPageID(data.pageID);
@@ -316,7 +320,7 @@ t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
 			this->nextPageID = data.nextPageID;
 			this->nextSlot = data.nextSlot;
 			
-			if (leafNodePageHeader.previous == 0) {
+			if (leafNodePageHeader.previous == 0 && this->lastKeySlot == 0) {
 				this->flag = true;
 			}
 			
