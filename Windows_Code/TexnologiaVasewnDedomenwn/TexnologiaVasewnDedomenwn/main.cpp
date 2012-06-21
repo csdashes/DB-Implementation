@@ -469,7 +469,8 @@ void testSSQLM() {
 	
 	REM_RecordID rids[50];
 	int slott;
-	dmlm3->Where("table1","age>20 AND name=TASOS__________",rids);	
+
+	dmlm3->Where("table1","age>20 AND id=1",rids);	
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	for(int lola = 0; lola <50; lola++){		//*********************************

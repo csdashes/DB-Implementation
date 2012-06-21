@@ -88,7 +88,7 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 
 		int offset = 0;
 		int size = 0;
-		char type[12];
+		char *type;
 		int indexNo = 0;
 		while( rfs->GetNextRecord(rh) != REM_FSEOF ){
 		
@@ -203,6 +203,11 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 
 	for(int iii=0; iii< conditionsList.size(); iii++){	
 
+		int condLength = strlen(conditionsList[iii]);		// keep a back up from the condition string
+		char *condit;
+		condit = (char *)malloc(condLength);
+		strcpy(condit,conditionsList[iii]);
+
 		rc = GetConditionInfo(conditionsList[iii],conditionAttribute,comp,conditionValue);
 		if (rc != OK) {return rc; }	
 		
@@ -304,57 +309,100 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 			cout<< "." << endl;
 		}
 		else{	//IN CASE THERE IS NO INDEX
-			conditionsListWithoutIndex.push_back(conditionsList[iii]);		// apo8hkeyse ta conditions se mia lista
+			conditionsListWithoutIndex.push_back(condit);		// apo8hkeyse ta conditions se mia lista
 		}
 	}
 
 	STORM_StorageManager *stormgr3 = new STORM_StorageManager();
 	REM_RecordFileManager *remrfm = new REM_RecordFileManager(stormgr3);
 	REM_RecordFileHandle *remrfh = new REM_RecordFileHandle();
-	REM_RecordHandle remrh;
-	char *pdata;
+	REM_RecordHandle *remrh = new REM_RecordHandle();
 	vector <char*> recordsFromIndexes;
 	hash_map <int, REM_RecordID>::iterator rids_Iter;
+	char *pdata;
 
 	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 	rc = remrfm->OpenRecordFile(pathname,*remrfh);
 	if (rc != OK) { return rc; }
 
+	
 	for ( rids_Iter = rids.begin( ); rids_Iter != rids.end( ); rids_Iter++ ){	// vres ta records sta opoia antistoixoun h tomh twn rids twn indexes
-		rc = remrfh->ReadRecord(rids_Iter->second,remrh);
+		rc = remrfh->ReadRecord(rids_Iter->second,*remrh);
 		if (rc != OK) {return rc; }	
 
-		remrh.GetData(pdata);
-		recordsFromIndexes.push_back(pdata);									// apo8hkeyse ta se mia lista
+		remrh->GetData(pdata);
+
+		int pDataLength = strlen(pdata);
+		char * newInput;
+		newInput = (char *)malloc(pDataLength);
+		strcpy(newInput,pdata);
+		recordsFromIndexes.push_back(newInput);									// apo8hkeyse ta se mia lista
+	}
+	if(!conditionsListWithoutIndex.empty()){									// ean yparxoun conditions xwris indexes
+
+		char *pData;
+		int offset,size,indexID;
+		char *type;
+
+		for(int i=0; i< conditionsListWithoutIndex.size(); i++){				// gia ka8e tetoio condition
+			rc = GetConditionInfo(conditionsListWithoutIndex[i],conditionAttribute,comp,conditionValue);
+			if (rc != OK) {return rc; }	
+
+			int condAttrLength = strlen(conditionAttribute);
+
+			rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,condAttrLength, 7, EQ_OP, conditionAttribute);
+			if (rc != OK) {return rc; }
+
+			rc = rfs->GetNextRecord(rh);
+			if (rc != OK) {return rc; }
+
+			rc = rh.GetData(pData);
+			if (rc != OK) {return rc; }
+
+			rc = GetAttrInfo(pData,offset,type,size,indexID);
+			
+			for(int j=0; j<recordsFromIndexes.size(); j++){						// sygkrine an isxyei me ola ta records pou epestrepsan oi indexes
+				char *value;
+				value = (char *)malloc(size);
+				int z;
+				for(z=0; z<size; z++){
+					value[z] = recordsFromIndexes[j][offset+z];
+				}
+				value[z+1] = '\0';
+				if(strstr(type,"TYPE_INT")){
+					int val = atoi(value);
+					if(comp == EQ_OP){
+						if(val == atoi(conditionValue)){
+							cout<<"PARE!!: "<<recordsFromIndexes[j]<<endl;
+						}
+					}
+					else if(comp == GT_OP){
+						if(val > atoi(conditionValue)){
+							cout<<"PARE!!: "<<recordsFromIndexes[j]<<endl;
+						}
+					}
+					// complete these if-else
+				}
+				else{
+					if(strstr(value,conditionValue)){
+						cout<<"DOULEUEI"<<endl;
+					}
+				}
+			}
+		}
+	}
+	else{
+		for( int i=0; i<recordsFromIndexes.size(); i++){
+			cout<<"PARE!!:"<<recordsFromIndexes[i]<<endl;
+		}
 	}
 
-
-//	else{	//IN CASE THERE IS NO INDEX
-//		// Open the table file
-//		_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
-//		rc = rfm->OpenRecordFile(pathname,*rfh);
-//		if (rc != OK) { return rc; }
-//																				//FIXXING: NA PAIRNEI SWSTES PARAMETROUS H OpenRecordScan
-//		// Find the record
-////		rc = rfs->OpenRecordScan(*rfh,TYPE_STRING,finalLength, 0, EQ_OP, tableNattr);
-//		if (rc != OK) {return rc; }
-//
-//		rfs->GetNextRecord(rh);
-//		int i = 0;
-//		while( rh.GetRecordID(rid) != STORM_EOF ){
-//			ridsArray[i] = rid;
-//		}
-//
-//		rc = rfm->CloseRecordFile(*rfh);
-//		if (rc != OK) {return rc; }
-//	}
-//	
 	return OK;
 }
 
 
 //PRIVATE FUNCTIONS
-t_rc SSQLM_DML_Manager::GetAttrInfo(char *rec, int &offset, char *type, int &size, int &indexID){
+t_rc SSQLM_DML_Manager::GetAttrInfo(char *rec, int &offset, char *&type, int &size, int &indexID){
 
 	char *tokens;
 	int i = 1;
@@ -367,6 +415,8 @@ t_rc SSQLM_DML_Manager::GetAttrInfo(char *rec, int &offset, char *type, int &siz
 			offset = atoi(tokens);
 		}
 		else if( i == 4 ){
+			int len = strlen(tokens);
+			type = (char*)malloc(len);
 			strcpy(type,tokens);
 		}
 		else if( i == 5 ){
