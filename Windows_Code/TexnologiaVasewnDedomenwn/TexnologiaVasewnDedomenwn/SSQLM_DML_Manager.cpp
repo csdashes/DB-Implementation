@@ -10,43 +10,45 @@ SSQLM_DML_Manager::SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManag
 	this->rfm = rfm;
 	this->im = im;
 	this->dbName = dbName;
-	t_rc rc = OpenRelmet(dbName);
-	rc = OpenAttrmet(dbName);
+	t_rc rc = OpenRelmet(dbName);	//	Anoigei to arxeio rel.met kai arxikopoieitai o deikths *relmet
+	rc = OpenAttrmet(dbName);		//	Anoigei to arxeio attr.met kai arxikopoieitai o deikths *attrmet
 }
 
 SSQLM_DML_Manager::~SSQLM_DML_Manager(){
+
+	rfm->CloseRecordFile(*attrmet);
+	rfm->CloseRecordFile(*relmet);
+	delete(attrmet);
+	delete(relmet);
+	delete(rfm);
+	delete(im);
 }
 
 t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 	
-	char pathname[50];
-	REM_RecordFileHandle *rfh = new REM_RecordFileHandle();
-	REM_RecordID rid;
-	char *tokens;
-	
+	char pathname[50];												//	Gia na eisagoume ena record ston pinaka
+	REM_RecordFileHandle *rfh = new REM_RecordFileHandle();			//	anoigoume to arxeio tou pinaka,
+	REM_RecordID rid;												//	kanoume thn eisagwgh, kai epeita prepei na
+	char *tokens;													//	elegksoume ean yparxoun indexes tous opoious
+																	//	prepei na enhmerwsoume.
 	// Open the table file
 	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 	t_rc rc = rfm->OpenRecordFile(pathname,*rfh);
 	if (rc != OK) { return rc; }
 
 	// Insert the new record							
-	rc = rfh->InsertRecord(record,rid);					// We will use this rid to insert the new index entry (if exists)
-	if (rc != OK) { return rc; }
+	rc = rfh->InsertRecord(record,rid);								//	8a xrhsimopoihsoume auto to rid gia na kanoume
+	if (rc != OK) { return rc; }									//	thn eisagwgh stous indexers (ean yparxoun)
 
 	// Close the table file
 	rc = rfm->CloseRecordFile(*rfh);
 	if (rc != OK) { return rc; }
 
-	// CHECK IF THERE ARE INDEXES							na to kanw synarthsh
-	REM_RecordFileScan *rfs = new REM_RecordFileScan();
-	int tNameLength = strlen(tName);
-	REM_RecordHandle rh;
+	// CHECK IF THERE ARE INDEXES									//	Gia na elegksoume ean yparxoun indexes,
+	REM_RecordFileScan *rfs = new REM_RecordFileScan();				//	psaxnoume sto relmet arxeio na vroume thn eggrafh
+	int tNameLength = strlen(tName);								//	pou anaferete sto diko mas table kai na elegksoume
+	REM_RecordHandle rh;											//	ean o ari8mos twn indexes einai diaforos tou 0.
 	char *pData;
-
-	// Open rel.met file
-	//_snprintf_s(pathname,sizeof(pathname),"%s/rel.met",dbName);
-	//rc = rfm->OpenRecordFile(pathname,*relmet);
-	//if (rc != OK) { return rc; }
 
 	// Find the record with table name "tName"
 	rc = rfs->OpenRecordScan(*relmet,TYPE_STRING,tNameLength, 0, EQ_OP, (char*)tName);
@@ -59,7 +61,7 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 	if (rc != OK) {return rc; }
 
 	// Check if the indexes field is not 0
-	tokens = strtok (pData,";");					//split the recordData
+	tokens = strtok (pData,";");
 	int i = 1;
 	bool has_indexes = false;
 
@@ -78,10 +80,6 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 	// In case the number of indexes is different than 0, we have to insert entry in every index file
 	// First we find the ids of the index files by looking into the attr.met file
 	if( has_indexes ){
-
-		//_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
-		//rc = rfm->OpenRecordFile(pathname,*rfh);
-		//if (rc != OK) { return rc; }
 
 		rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,tNameLength, 0, EQ_OP, (char*)tName);
 		if (rc != OK) {return rc; }
@@ -115,7 +113,6 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 				indexEntry[j] = '\0';
 				rc = im->OpenIndex(pathname,indexNo,ih);
 				if (rc != OK) { return rc; }
-
 			
 				// Insert the entry into index file with id = indexNo
 				if(strcmp(type,"TYPE_INT") == 0){
@@ -135,15 +132,12 @@ t_rc SSQLM_DML_Manager::Insert(const char *tName,const char *record){
 
 			}
 		}
-
 		rc = rfs->CloseRecordScan();
 	}	
-	
-	
 	return OK;
 }
 
-t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID *ridsArray){
+t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, vector<char *> *finalResultRecords){
 
 	
 	
@@ -154,8 +148,8 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 	REM_RecordHandle rh;
 	REM_RecordID rid;
 
-	vector <char*> conditionsList; // empty
-	vector <char*> conditionsListWithoutIndex; // empty
+	vector <char*> conditionsList;
+	vector <char*> conditionsListWithoutIndex;
 
 	int condLength = strlen(conditions);
 	char *str = (char*)malloc(condLength);
@@ -163,7 +157,7 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 
 	char *pointer = str;
 	int offset = 0;
-	char condition[50]; //mia syn8hkh
+	char condition[50]; // one condition
 	int i = 0;
 	char *conditionAttribute = NULL;
 	char *conditionValue = NULL;
@@ -172,11 +166,6 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 	char * token;
 	int index_no;
 	t_rc rc;
-
-	// Open attr.met file
-	//_snprintf_s(pathname,sizeof(pathname),"%s/attr.met",dbName);
-	//t_rc rc = rfm->OpenRecordFile(pathname,*rfh);
-	//if (rc != OK) { return rc; }
 
 	// Split with delimeter "AND"
 	while(strstr(pointer,"AND")){					//***********************************************
@@ -201,132 +190,136 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 	hash_map<int, REM_RecordID> rids;
 	bool isFirstCondition = true;
 
-	for(int iii=0; iii< conditionsList.size(); iii++){	
-
-		int condLength = strlen(conditionsList[iii]);		// keep a back up from the condition string
+	for(int iii=0; iii< conditionsList.size(); iii++){		// Gia ka8e condition, 8a elegksw ean yparxei index.  
+															// Gia na to kanw auto spaw to condition sta attribute, comperator kai value, kai anoigw to attrmet.
+		int condLength = strlen(conditionsList[iii]);		
 		char *condit;
 		condit = (char *)malloc(condLength);
-		strcpy(condit,conditionsList[iii]);
+		strcpy(condit,conditionsList[iii]);					// keep a back up from the condition string because strtok destroys it.
 
-		rc = GetConditionInfo(conditionsList[iii],conditionAttribute,comp,conditionValue);
+		rc = GetConditionInfo(conditionsList[iii],conditionAttribute,comp,conditionValue);		// get the attribute, the comperator and the value of the condition
 		if (rc != OK) {return rc; }	
 		
-		// Calculate the length of "tName;attrName"											//***************************************
-		int tNameLength = strlen(tName);													//**	Sto arxeio attr.met psaxnw na dw
-		int attrNameLength = strlen(conditionAttribute);									//**	an to sygkekrimeno attribute
-		int finalLength = tNameLength + attrNameLength + 1;									//**	exei index. Gia na vrw to attribute
-																							//**	psaxnw thn symvoloseira: "tablename;attrname"
-		// Build the "tName;attrName". We use it to find the record in the file attr.met	//**
-		char *tableNattr = (char*)malloc(finalLength);										//**
-		strcpy(tableNattr,tName);															//**
-		strcat(tableNattr,";");																//**
-		strcat(tableNattr,conditionAttribute);												//**
-																							//**
-		// Find the record																	//**
-		t_rc rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,finalLength, 0, EQ_OP, tableNattr);//
-		if (rc != OK) {return rc; }															//**
-																							//**
-		rc = rfs->GetNextRecord(rh);														//**
+		// Calculate the length of "tName;attrName"												//***************************************
+		int tNameLength = strlen(tName);														//**	Sto arxeio attr.met psaxnw na dw
+		int attrNameLength = strlen(conditionAttribute);										//**	an to sygkekrimeno attribute
+		int finalLength = tNameLength + attrNameLength + 1;										//**	exei index. Gia na vrw to attribute
+																								//**	psaxnw thn symvoloseira: "tablename;attrname"
+		// Build the "tName;attrName". We use it to find the record in the file attr.met		//**
+		char *tableNattr = (char*)malloc(finalLength);											//**
+		strcpy(tableNattr,tName);																//**
+		strcat(tableNattr,";");																	//**
+		strcat(tableNattr,conditionAttribute);													//**
+																								//**
+		// Find the record																		//**
+		t_rc rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,finalLength, 0, EQ_OP, tableNattr);	//**
+		if (rc != OK) {return rc; }																//**
+																								//**
+		rc = rfs->GetNextRecord(rh);															//**	Vrhka to record, ara twra prepei na to spasw kai na parw to indexid
+		if (rc != OK) {return rc; }																//***************************************
+
+		int indexNo;																		
+		rc = rh.GetData(rdata);	
 		if (rc != OK) {return rc; }	
-																							//**
-		int indexNo;																		//**
-		//Get the index id																	//**
-		rc = rh.GetData(rdata);																//**
-																							//**
-		token = strtok (rdata,";");					//split the recordData					//**
-																							//**
-		// Retrieve the index id															//**
-		int jj = 1;																			//**	pairnw to indexID
-		while (token != NULL){																//**
-			if( jj == 6 ){																	//**	
-				index_no = atoi(token);														//**
-			}																				//**
-			jj++;																			//**
-			token = strtok (NULL, ";");														//**
-		}																					//********************************************
+																							
+		token = strtok (rdata,";");						// split the recordData					
+															
+		int jj = 1;																			
+		bool typos = false;								// true in case on integer, false in case of string
+		while (token != NULL){
+			if( jj == 4 ){								// get the type															
+				if( strcmp(token,"TYPE_STRING") == 0){
+					typos = false;
+				}
+				else if( strcmp(token,"TYPE_INT") == 0){
+					typos = true;
+				}
+			}
+			if( jj == 6 ){								// get the index id												
+				index_no = atoi(token);														
+			}																				
+			jj++;																			
+			token = strtok (NULL, ";");														
+		}
 
 		rc = rfs->CloseRecordScan();
 		if (rc != OK) {return rc; }
 
 		if(index_no != -1){	//IN CASE OF INDEX									//***********************************
-																				//**	ean exei index to attribute, 
+																				//**	ean exei index, 
 			// Open index file													//**	anoigw to arxeio tou index
-			INXM_IndexHandle ih;												//**
+			INXM_IndexHandle ih;												//**	kai psaxnw mesa ta rids pou epalh8eyoun thn syn8hkh
 			_snprintf_s(pathname2,sizeof(pathname),"%s/%s",dbName,tName);		//**
 																				//**
 			rc = im->OpenIndex(pathname2,index_no,ih);							//**
 			if (rc != OK) { return rc; }										//**
 																				//**
 			INXM_IndexScan *is = new INXM_IndexScan();							//**
-			int cndV = atoi(conditionValue);
-			int *key1 = new int(cndV);
-			rc = is->OpenIndexScan(ih, comp, key1);								//**
-			if (rc != OK) { return rc; }										//**
 																				//**
+			if(typos){	// case of Integer										//**
+				int cndV = atoi(conditionValue);								//**
+				int *key1 = new int(cndV);										//**
+				rc = is->OpenIndexScan(ih, comp, key1);			// TASOOOOOOOOOOOO EDWWWWWWWWWWWWWwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww.			
+				if (rc != OK) { return rc; }									//**
+			}																	//**
+			else{		//case of string										//**
+				rc = is->OpenIndexScan(ih, comp, conditionValue);				//**
+				if (rc != OK) { return rc; }									//**	
+			}																	//***********************************
+			
+			
+			// Prepei twra na vroume thn tomh olwn twn rid pou epistrefoun oi indexers																	
 			int i = 0;	
 			int page;
 			int slott;
 
-			if(isFirstCondition){													//	dhmiourgeitai o hashmap gia to prwto condition
-
-				while( is->GetNextEntry(rid) != INXM_FSEOF ){						//	kai ka8e record pou epistrefei
-				
-					rid.GetPageID(page);
-					rid.GetSlot(slott);
-					rids[page*10000+slott] = rid;									
-
-					//cout<<"slott->"<<slott<<endl;
-					//ridsArray[i] = rid;											
-					i++;															
-				}	
-				isFirstCondition = false;
-			}		
+			if(isFirstCondition){									//***********************************
+																	//**	Edw dhmiourgeitai o hashmap gia to prwto condition.
+				while( is->GetNextEntry(rid) != INXM_FSEOF ){		//**	Gia ka8e record pou epistrefei
+																	//**
+					rid.GetPageID(page);							//**
+					rid.GetSlot(slott);								//**			
+					rids[page*10000+slott] = rid;					//**	ypologizw ena monadiko kleidi					
+					i++;											//**	kai pros8etw to recordid ston hash.		
+				}													//**
+				isFirstCondition = false;							//**	Gia thn epomenh syn8hkh, 8a vrei thn tomh tou hash me ta epomena rids.
+			}														//***********************************
 			else{
 				hash_map<int, REM_RecordID> intersectionRIDs;
 
-				while( is->GetNextEntry(rid) != INXM_FSEOF ){						//	kai ka8e record pou epistrefei
+				while( is->GetNextEntry(rid) != INXM_FSEOF ){
 				
 					rid.GetPageID(page);
 					rid.GetSlot(slott);
-					//rids[page*10000+slott] = rid;		
-					if(rids.count(page*10000+slott)){
-						intersectionRIDs[page*10000+slott] = rid;
-					}
-
-					//cout<<"slott->"<<slott<<endl;
-					//ridsArray[i] = rid;											
+					if(rids.count(page*10000+slott)){				//	ean yparxei hdh ston prohgoumeno hash
+						intersectionRIDs[page*10000+slott] = rid;	//	pros8ese to ston hash me thn tomh.
+					}								
 					i++;															
 				}
-				rids.swap(intersectionRIDs);
-				//hash_map<int, REM_RecordID> rids(intersectionRIDs);
+				rids.swap(intersectionRIDs);						//	antallakse tous hashes wste na leitourghsei anadromika kai gia ta epomena conditions
 			}
-			hash_map <int, REM_RecordID>::iterator rids_Iter;
-			int sl;
-			for ( rids_Iter = rids.begin( ); rids_Iter != rids.end( ); rids_Iter++ ){
-				rids_Iter->second.GetSlot(sl);
-				cout<<sl<<endl;
-			}
-			cout<< "." << endl;
+
+			rc = is->CloseIndexScan();
+			if (rc != OK) { return rc; }
 		}
-		else{	//IN CASE THERE IS NO INDEX
-			conditionsListWithoutIndex.push_back(condit);		// apo8hkeyse ta conditions se mia lista
+		else{	// IN CASE THERE IS NO INDEX						//	Se periptwsh pou to attribute tou condition den exei index
+			conditionsListWithoutIndex.push_back(condit);			//	pros8ese to sthn lista me ta conditions pou den exoun index
 		}
 	}
 
-	STORM_StorageManager *stormgr3 = new STORM_StorageManager();
-	REM_RecordFileManager *remrfm = new REM_RecordFileManager(stormgr3);
-	REM_RecordFileHandle *remrfh = new REM_RecordFileHandle();
-	REM_RecordHandle *remrh = new REM_RecordHandle();
-	vector <char*> recordsFromIndexes;
+	STORM_StorageManager *stormgr3 = new STORM_StorageManager();				//	Epomeno vhma einai na paroume apo to REM ta records sta opoia
+	REM_RecordFileManager *remrfm = new REM_RecordFileManager(stormgr3);		//	antistoixoun ta recordids pou mazepsame apo tous indexers.
+	REM_RecordFileHandle *remrfh = new REM_RecordFileHandle();					//	Ean den mazepsame kanena rid apo indexer, tote anazhtoume sto
+	REM_RecordHandle *remrh = new REM_RecordHandle();							//	table ta records pou epalh8euoun thn syn8hkh (ths opoias to
+	vector <char*> recordsFromIndexes;											//	attribute den eixe index)
 	hash_map <int, REM_RecordID>::iterator rids_Iter;
 	char *pdata;
 
 	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
 	rc = remrfm->OpenRecordFile(pathname,*remrfh);
 	if (rc != OK) { return rc; }
-
 	
-	for ( rids_Iter = rids.begin( ); rids_Iter != rids.end( ); rids_Iter++ ){	// vres ta records sta opoia antistoixoun h tomh twn rids twn indexes
+	for ( rids_Iter = rids.begin( ); rids_Iter != rids.end( ); rids_Iter++ ){	// Vres ta records sta opoia antistoixoun h tomh twn rids twn indexes.
 		rc = remrfh->ReadRecord(rids_Iter->second,*remrh);
 		if (rc != OK) {return rc; }	
 
@@ -336,21 +329,26 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 		char * newInput;
 		newInput = (char *)malloc(pDataLength);
 		strcpy(newInput,pdata);
-		recordsFromIndexes.push_back(newInput);									// apo8hkeyse ta se mia lista
+		recordsFromIndexes.push_back(newInput);									// Apo8hkeyse ta se mia lista.
 	}
-	if(!conditionsListWithoutIndex.empty()){									// ean yparxoun conditions xwris indexes
 
-		char *pData;
-		int offset,size,indexID;
-		char *type;
+	rc = remrfm->CloseRecordFile(*remrfh);
+	if (rc != OK) {return rc; }
 
-		for(int i=0; i< conditionsListWithoutIndex.size(); i++){				// gia ka8e tetoio condition
-			rc = GetConditionInfo(conditionsListWithoutIndex[i],conditionAttribute,comp,conditionValue);
+	if(!conditionsListWithoutIndex.empty()){																//	Ean yparxoun conditions xwris indexes,
+																											//	8a psaksoume to attribute tou ka8e condition sto arxeio attrmet
+		char *pData;																						//	wste na paroume plhrofories gia to attribute (offset,type,...)
+		int offset,size,indexID;																			//	me teliko stoxo na elegksoume poia apo ta records pou epestrepsan
+		char *type;																							//	oi indexers, epalh8euoun ta conditions xwris index.
+
+		for(int i=0; i< conditionsListWithoutIndex.size(); i++){											//	Gia ka8e tetoio condition loipon,
+
+			rc = GetConditionInfo(conditionsListWithoutIndex[i],conditionAttribute,comp,conditionValue);	//	vres ta systatika tou merh (attribute, comperator, value)
 			if (rc != OK) {return rc; }	
 
 			int condAttrLength = strlen(conditionAttribute);
 
-			rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,condAttrLength, 7, EQ_OP, conditionAttribute);
+			rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,condAttrLength, 7, EQ_OP, conditionAttribute);	//	kai psakse mesa sto attrmet to record gia to sygkekrimeno attribute
 			if (rc != OK) {return rc; }
 
 			rc = rfs->GetNextRecord(rh);
@@ -359,57 +357,154 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, REM_RecordID 
 			rc = rh.GetData(pData);
 			if (rc != OK) {return rc; }
 
-			rc = GetAttrInfo(pData,offset,type,size,indexID);
-			
-			for(int j=0; j<recordsFromIndexes.size(); j++){						// sygkrine an isxyei me ola ta records pou epestrepsan oi indexes
-				char *value;
-				value = (char *)malloc(size);
-				int z;
-				for(z=0; z<size; z++){
-					value[z] = recordsFromIndexes[j][offset+z];
-				}
-				value[z+1] = '\0';
-				if(strstr(type,"TYPE_INT")){
-					int val = atoi(value);
-					if(comp == EQ_OP){
-						if(val == atoi(conditionValue)){
-							cout<<"PARE!!: "<<recordsFromIndexes[j]<<endl;
+			rc = GetAttrInfo(pData,offset,type,size,indexID);												//	Pare tis plhrofories gia to attribute.
+			if (rc != OK) {return rc; }
+
+			rc = rfs->CloseRecordScan();
+			if (rc != OK) {return rc; }
+
+			if(!recordsFromIndexes.empty()){
+				for(int j=0; j<recordsFromIndexes.size(); j++){												//	Sygkrine an isxyei h syn8hkh me ola ta records pou epestrepsan oi indexes.
+					char *value;																			//	Ean h syn8hkh epalh8euetai, pros8ese to record sthn lista eksodou finalResultRecords.
+					value = (char *)malloc(size);
+					int z;
+					for(z=0; z<size; z++){
+						value[z] = recordsFromIndexes[j][offset+z];
+					}
+					value[z] = '\0';
+					if(strstr(type,"TYPE_INT")){
+						int val = atoi(value);
+						int condValue = atoi(conditionValue);
+						if(comp == EQ_OP){
+							if(val == condValue){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
+						}
+						else if(comp == GT_OP){
+							if(val > condValue){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
+						}
+						else if(comp == LT_OP){
+							if(val < condValue){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
+						}
+						else if(comp == NE_OP){
+							if(val != condValue){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
+						}
+						else if(comp == GE_OP){
+							if(val >= condValue){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
+						}
+						else if(comp == LE_OP){
+							if(val <= condValue){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
 						}
 					}
-					else if(comp == GT_OP){
-						if(val > atoi(conditionValue)){
-							cout<<"PARE!!: "<<recordsFromIndexes[j]<<endl;
+					else{ // the type is TYPE_STRING
+						if(comp == EQ_OP){
+							if(strstr(value,conditionValue)){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
 						}
-					}
-					// complete these if-else
-				}
-				else{
-					if(strstr(value,conditionValue)){
-						cout<<"DOULEUEI"<<endl;
+						if(comp == GT_OP || comp == GE_OP){
+							if(strcmp(value,conditionValue) == 1){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
+						}
+						if(comp == LT_OP || comp == LE_OP){
+							if(strcmp(value,conditionValue) == -1){
+								finalResultRecords->push_back(recordsFromIndexes[j]);
+							}
+						}
 					}
 				}
 			}
+			else{	// PERIPTWSH POU DEN EIXAME KANENA CONDITION ME INDEX									//	Sthn periptwsh pou den exoume kamia syn8hkh me index
+				REM_RecordFileScan *remrfs = new REM_RecordFileScan();										//	psaxnoume mesa ston pinaka ta records pou epalh8euoun
+				REM_RecordHandle *remrh2 = new REM_RecordHandle();											//	thn syn8hkh kai ta apouhkeyoume sthn lista eksodou.
+				STORM_StorageManager *stormgr4 = new STORM_StorageManager();				
+				REM_RecordFileManager *remrfm2 = new REM_RecordFileManager(stormgr3);		
+				REM_RecordFileHandle *remrfh2 = new REM_RecordFileHandle();					
+				char *data;
+
+				_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,tName);
+				rc = remrfm2->OpenRecordFile(pathname,*remrfh2);
+				if (rc != OK) { return rc; }
+				
+				if(strcmp(type,"TYPE_INT") == 0){
+
+					int *key = new int(atoi(conditionValue));
+
+					rc = remrfs->OpenRecordScan(*remrfh2,TYPE_INT,size,offset,comp,key);
+					if (rc != OK) {return rc; }
+				}
+				else{
+					rc = remrfs->OpenRecordScan(*remrfh2,TYPE_STRING,size,offset,comp,conditionValue);
+					if (rc != OK) {return rc; }
+				}
+				while( remrfs->GetNextRecord(*remrh2) != REM_FSEOF ){
+
+					rc = remrh2->GetData(data);
+					if (rc != OK) {return rc; }
+
+					int dataLength = strlen(data);
+					char *input;
+					input = (char *)malloc(dataLength);
+					strcpy(input,data);
+					finalResultRecords->push_back(input);		
+				}
+
+				rc = remrfs->CloseRecordScan();
+				if (rc != OK) {return rc; }
+
+				rc = remrfm2->CloseRecordFile(*remrfh2);
+				if (rc != OK) {return rc; }
+				
+				delete remrfs;
+				delete remrh2;
+				delete remrfh2;
+				delete remrfm2;
+				delete stormgr4;
+			}
 		}
 	}
-	else{
-		for( int i=0; i<recordsFromIndexes.size(); i++){
-			cout<<"PARE!!:"<<recordsFromIndexes[i]<<endl;
+	else{	// PERIPTWH POU EIXAME MONO CONDITIONS ME INDEXES		//	Se auth thn periptwsh apla vgazoume sthn eksodo
+		for( int i=0; i<recordsFromIndexes.size(); i++){			//	ta records pou epestrepsan oi indexes.
+			finalResultRecords->push_back(recordsFromIndexes[i]);
 		}
 	}
+
+	delete remrh;
+	delete remrfh;
+	delete remrfm;
+	delete stormgr3;
 
 	return OK;
 }
 
+t_rc SSQLM_DML_Manager::Select(char *columns, vector<char *> recordsFromWhereFunction, vector<char *> *finalResults){
+
+	//	CODE HERE
+
+	return OK;
+}
 
 //PRIVATE FUNCTIONS
+
+//	Synarthsh pou spaei ena record apo to attrmet arxeio sta systatika tou
 t_rc SSQLM_DML_Manager::GetAttrInfo(char *rec, int &offset, char *&type, int &size, int &indexID){
 
 	char *tokens;
 	int i = 1;
 	
-	tokens = strtok (rec,";");					//split the recordData
+	tokens = strtok (rec,";");					
 
-	// Retrieve the index id
 	while (tokens != NULL){
 		if( i == 3 ){
 			offset = atoi(tokens);
@@ -432,6 +527,7 @@ t_rc SSQLM_DML_Manager::GetAttrInfo(char *rec, int &offset, char *&type, int &si
 	return OK;
 }
 
+//	Synarthsh pou anoigei to arxeio relmet, dinontas timh ston deikth *relmet
 t_rc SSQLM_DML_Manager::OpenRelmet(char *dbName){
 	char pathname[255];
 	this->relmet = new REM_RecordFileHandle();
@@ -441,7 +537,7 @@ t_rc SSQLM_DML_Manager::OpenRelmet(char *dbName){
 
 	return OK;
 }
-
+//	Synarthsh pou anoigei to arxeio attrmet dinontas timh ston deikth *attrmet
 t_rc SSQLM_DML_Manager::OpenAttrmet(char *dbName){
 	char pathname[255];
 	this->attrmet = new REM_RecordFileHandle();
@@ -452,6 +548,7 @@ t_rc SSQLM_DML_Manager::OpenAttrmet(char *dbName){
 	return OK;
 }
 
+//	Synarthsh h opoia spaei to string mias syn8hkhs sta systatika thw (attribute, comperator, value)
 t_rc SSQLM_DML_Manager::GetConditionInfo(char *condition, char *&conditionAttribute, t_compOp &comp, char *&conditionValue){
 	
 	// Get the comparison											
@@ -468,7 +565,9 @@ t_rc SSQLM_DML_Manager::GetConditionInfo(char *condition, char *&conditionAttrib
 	else if(strstr(condition,"="))	//case of =		
 		comp = EQ_OP;											
 
-	conditionAttribute = strtok (condition,"><=!");		
+	// Get the attribute
+	conditionAttribute = strtok (condition,"><=!");
+	// Get the value
 	conditionValue = strtok (NULL, "><=!");							
 
 	return OK;

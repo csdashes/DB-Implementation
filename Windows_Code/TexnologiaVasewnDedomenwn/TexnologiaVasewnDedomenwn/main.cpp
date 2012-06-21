@@ -422,37 +422,27 @@ void testSSQLM() {
 
 	//test DML part
 
-	//char pathname[255];
-	//REM_RecordFileHandle *rfh2 = new REM_RecordFileHandle();
-	//_snprintf_s(pathname,sizeof(pathname),"testingDB/attr.met");
-	//rc = rfm2->OpenRecordFile(pathname,*rfh2);
-	//REM_RecordFileScan *rfs = new REM_RecordFileScan();
-	//rfs->OpenRecordScan(*rfh2,TYPE_STRING,10, 0, EQ_OP, "table1;age");
-	//REM_RecordHandle rh2;
-	//rfs->GetNextRecord(rh2);
-	//char *pDataa;
-	//rh2.GetData(pDataa);
-	//cout<<pDataa<<endl;
-
 	SSQLM_DML_Manager *dmlm = new SSQLM_DML_Manager(rfm2,im2,"testingDB");
-	char record[24];
-	strcpy(record,"1___ILIAS__________22__");
 
-	rc = dmlm->Insert("table1",record);
+	rc = dmlm->Insert("table1","1___ILIAS__________22__");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}
 
-	char record2[24];
-	strcpy(record2,"2___TASOS__________25__");
+	rc = dmlm->Insert("table1","2___TASOS__________25__");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	rc = dmlm->Insert("table1",record2);
+	rc = dmlm->Insert("table1","3___ELENH__________30__");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	rc = dmlm->Insert("table1","4___PETROS_________18__");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 	
 
 
-	delete dmlm;
-	delete im2;
-	delete sdm2;
-	delete rfm2;
-	delete mgr2;
+	//delete dmlm;			GIA KAPOIO LOGO PETAEI ERROR
+	//delete im2;
+	//delete sdm2;
+	//delete rfm2;
+	//delete mgr2;
 
 	STORM_StorageManager *mgr3 = new STORM_StorageManager();
 	REM_RecordFileManager *rfm3 = new REM_RecordFileManager(mgr3);
@@ -462,21 +452,17 @@ void testSSQLM() {
 	INXM_IndexManager *im3 = new INXM_IndexManager(mgr4);
 
 	SSQLM_DML_Manager *dmlm3 = new SSQLM_DML_Manager(rfm3,im3,"testingDB");
-
-
-	// MEXRI EDW OLA DOULEUOUN SWSTA. TO PROVLHMA EINAI OTAN KALEITAI TWRA H WHERE.
-	// ANOIKSE TO SSQLM_DML_MANAGER.CPP GRAMMH 270
 	
 	REM_RecordID rids[50];
 	int slott;
+	vector <char*> finalResultRecords;
 
-	dmlm3->Where("table1","age>20 AND id=1",rids);	
+	dmlm3->Where("table1","id>2 AND age>20",&finalResultRecords);	
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	for(int lola = 0; lola <50; lola++){		//*********************************
-		rids[lola].GetSlot(slott);				//**	dokimh ean douleuei h where.
-		//cout<<slott<<endl;						//**	paparia.
-	}											//*********************************
+	for(int lola = 0; lola <finalResultRecords.size(); lola++){	
+		cout<<finalResultRecords[lola]<<endl;
+	}										
 	system("pause");
 }
 

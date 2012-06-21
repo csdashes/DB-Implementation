@@ -28,9 +28,9 @@ public:
 	SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im, char *dbName);
 	~SSQLM_DML_Manager();
 
-	t_rc Select();
+	t_rc Select(char *columns, vector<char *> recordsFromWhereFunction, vector<char *> *finalResults);
 	t_rc From();
-	t_rc Where(const char *tName, char *conditions, REM_RecordID *ridsArray);
+	t_rc Where(const char *tName, char *conditions, vector<char *> *finalResultRecords);
 	t_rc Insert(const char *tName, const char *record);
 	t_rc Delete();
 	t_rc Update();
