@@ -29,6 +29,7 @@ private:
 	int nextSlot;
 	
 	int KeyCmp(void *key,void *key2);
+	bool StopCondition(INXM_Node &node, void *key);
 	t_rc ReadData(int page, int slot, INXM_Data &node);
 	t_rc ReadData(STORM_PageHandle pageHandle, int slot, INXM_Data &data);
 	t_rc ReadNode(int page, int slot, INXM_Node &node);
