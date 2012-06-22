@@ -93,17 +93,6 @@ t_rc SSQLM_DDL_Manager::CreateIndex(const char *tName, const char *attrName){
 	rc = im->CreateIndex(pathname,indexNo,attrType,attrLength);
 	if (rc != OK) { return rc; }
 
-	// TESTING
-	//REM_RecordFileScan *rfs = new REM_RecordFileScan();
-	//rfs->OpenRecordScan(*attrmet,TYPE_STRING,10, 0, EQ_OP, "table1;age");
-	//REM_RecordHandle rh3;
-	//rfs->GetNextRecord(rh3);
-	//char *pDataa;
-	//rh2.GetData(pDataa);
-	//cout<<pDataa<<endl;
-
-	//attrmet->FlushPages();
-
 	return OK;
 }
 

@@ -346,22 +346,8 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, vector<char *
 			rc = GetConditionInfo(conditionsListWithoutIndex[i],conditionAttribute,comp,conditionValue);	//	vres ta systatika tou merh (attribute, comperator, value)
 			if (rc != OK) {return rc; }	
 
-			int condAttrLength = strlen(conditionAttribute);
-
-			rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,condAttrLength, 7, EQ_OP, conditionAttribute);	//	kai psakse mesa sto attrmet to record gia to sygkekrimeno attribute
-			if (rc != OK) {return rc; }
-
-			rc = rfs->GetNextRecord(rh);
-			if (rc != OK) {return rc; }
-
-			rc = rh.GetData(pData);
-			if (rc != OK) {return rc; }
-
-			rc = GetAttrInfo(pData,offset,type,size,indexID);												//	Pare tis plhrofories gia to attribute.
-			if (rc != OK) {return rc; }
-
-			rc = rfs->CloseRecordScan();
-			if (rc != OK) {return rc; }
+			rc = FindAttributeInAttrmet(conditionAttribute,offset,type,size,indexID);						//	kai psakse mesa sto attrmet to record gia to sygkekrimeno attribute. Pare tis plhrofories gia to attribute.
+			if (rc != OK) {return rc; }	
 
 			if(!recordsFromIndexes.empty()){
 				for(int j=0; j<recordsFromIndexes.size(); j++){												//	Sygkrine an isxyei h syn8hkh me ola ta records pou epestrepsan oi indexes.
@@ -488,10 +474,55 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, vector<char *
 	return OK;
 }
 
-t_rc SSQLM_DML_Manager::Select(char *columns, vector<char *> recordsFromWhereFunction, vector<char *> *finalResults){
+t_rc SSQLM_DML_Manager::Select(vector<char *> columns, vector<char *> recordsFromWhereFunction, vector<char *> *finalResults){
 
-	//	CODE HERE
+	//	gia ka8e column, psaxnoume sto attrmet to offset
+	//	gia ka8e record apo auta pou epestrepe h WHERE,
+	//	pairnoume ta dedomena analoga me to offset kai ta apo8hkeyoume se mia lista
+	//	telos, dhmiourgoyme ton teliko pinaka ton opoio kai epistrefoume.
 
+	if(strcmp(columns[0],"*") != 0){												//	Se periptwsh poy anti gia column exw *,
+																					//	to teliko apotelesma einai idio me auto pou epestrepse h WHERE
+		vector<vector<char *>> listsToCombine;
+		int offset, size, indexID;
+		char *type;
+
+		for(int n = 0; n < columns.size(); n++) {									//	Gia ka8e column
+			vector<char *> tempList;												//	ftiaxnw thn lista me ta dedomena apo to ka8e record.
+
+			t_rc rc = FindAttributeInAttrmet(columns[n],offset,type,size,indexID);	//	Vriskw to offset tou column
+			if (rc != OK) { return rc; }
+
+			for(int i = 0; i < recordsFromWhereFunction.size(); i++) {
+
+				char *value;
+				value = (char *)malloc(size);
+				int z;
+				for(z=0; z<size; z++){
+					value[z] = recordsFromWhereFunction[i][offset+z];				//	Pairnw ta dedomena pou xreiazomai.
+				}
+				value[z] = '\0';
+
+				tempList.push_back(value);
+			}
+			listsToCombine.push_back(tempList);										//	Pros8etw thn lista tou column sthn lista me ta columns
+		}
+
+		for(int h = 0; h < recordsFromWhereFunction.size(); h++) {					//	Ayto 8a to ekshghsw me sxhma kalytera.
+			char *tempRecord;														//	Pairnw to idio stoixeio ka8e listas
+			int tempRecordlength = strlen(recordsFromWhereFunction[0]);				//	kai ftiaxnw tis telikes pleiades eksodou.
+			tempRecord = (char *)malloc(tempRecordlength);
+
+			strcpy(tempRecord,listsToCombine[0][h]);
+			for(int t = 1; t < listsToCombine.size(); t ++) {
+				strcat(tempRecord,listsToCombine[t][h]);
+			}
+			finalResults->push_back(tempRecord);
+		}
+	}
+	else {
+		finalResults->swap(recordsFromWhereFunction);
+	}
 	return OK;
 }
 
@@ -569,6 +600,32 @@ t_rc SSQLM_DML_Manager::GetConditionInfo(char *condition, char *&conditionAttrib
 	conditionAttribute = strtok (condition,"><=!");
 	// Get the value
 	conditionValue = strtok (NULL, "><=!");							
+
+	return OK;
+}
+
+t_rc SSQLM_DML_Manager::FindAttributeInAttrmet(char *attributeName, int &offset, char *&type, int &size, int &indexID){
+
+	int attributeLength = strlen(attributeName);
+
+	REM_RecordFileScan *rfs = new REM_RecordFileScan();
+	REM_RecordHandle rh;
+	char *pData;
+
+	t_rc rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,attributeLength, 7, EQ_OP, attributeName);	//	kai psakse mesa sto attrmet to record gia to sygkekrimeno attribute
+	if (rc != OK) {return rc; }
+
+	rc = rfs->GetNextRecord(rh);
+	if (rc != OK) {return rc; }
+	
+	rc = rh.GetData(pData);
+	if (rc != OK) {return rc; }
+	
+	rc = GetAttrInfo(pData,offset,type,size,indexID);												//	Pare tis plhrofories gia to attribute.
+	if (rc != OK) {return rc; }
+
+	rc = rfs->CloseRecordScan();
+	if (rc != OK) {return rc; }
 
 	return OK;
 }
