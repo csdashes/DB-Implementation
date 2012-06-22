@@ -460,9 +460,23 @@ void testSSQLM() {
 	dmlm3->Where("table1","id>2 AND age>20",&finalResultRecords);	
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
-	for(int lola = 0; lola <finalResultRecords.size(); lola++){	
+	/*for(int lola = 0; lola <finalResultRecords.size(); lola++){	
 		cout<<finalResultRecords[lola]<<endl;
-	}										
+	}	*/			
+
+	vector <char*> finalResultRecordsSelect;
+	vector <char*> columns;						//	kanw push ta columns pou 8elw na krathsw
+	//columns.push_back("age");					//	antistoixo tou SELECT age, name
+	//columns.push_back("name");
+	columns.push_back("*");
+
+	dmlm3->Select(columns,finalResultRecords,&finalResultRecordsSelect);
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	for(int lola = 0; lola <finalResultRecordsSelect.size(); lola++){	
+		cout<<finalResultRecordsSelect[lola]<<endl;
+	}	
+
 	system("pause");
 }
 

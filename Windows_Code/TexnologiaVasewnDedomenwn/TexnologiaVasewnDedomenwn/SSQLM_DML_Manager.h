@@ -22,13 +22,14 @@ private:
 
 	t_rc GetAttrInfo(char *rec, int &offset, char *&type, int &size, int &indexID);	//Retrieve attribute info
 	t_rc GetConditionInfo(char *condition, char *&conditionAttribute, t_compOp &comp, char *&conditionValue);
+	t_rc FindAttributeInAttrmet(char *attributeName, int &offset, char *&type, int &size, int &indexID);
 
 public:
 
 	SSQLM_DML_Manager(REM_RecordFileManager *rfm, INXM_IndexManager *im, char *dbName);
 	~SSQLM_DML_Manager();
 
-	t_rc Select(char *columns, vector<char *> recordsFromWhereFunction, vector<char *> *finalResults);
+	t_rc Select(vector<char *> columns, vector<char *> recordsFromWhereFunction, vector<char *> *finalResults);
 	t_rc From();
 	t_rc Where(const char *tName, char *conditions, vector<char *> *finalResultRecords);
 	t_rc Insert(const char *tName, const char *record);
