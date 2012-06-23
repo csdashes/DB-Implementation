@@ -114,10 +114,10 @@ t_rc REM_RecordFileManager::OpenRecordFile(const char *fname, REM_RecordFileHand
 	 */
 	memcpy(&rfh.remFileHeader, &rfh.pData_FileHeader[0], REM_FILEHEADER_SIZE);
 	
-	printf ("# records in file = %d, record size = %d\n",
-			rfh.remFileHeader.nRecords, rfh.remFileHeader.recordSize);
-	printf ("records per page = %d \n",
-			rfh.remFileHeader.recordsPerPage);
+	//printf ("# records in file = %d, record size = %d\n",
+	//		rfh.remFileHeader.nRecords, rfh.remFileHeader.recordSize);
+	//printf ("records per page = %d \n",
+	//		rfh.remFileHeader.recordsPerPage);
 	
 	/* Successfully opened a record file handler */ 
 	rfh.isOpen = true;

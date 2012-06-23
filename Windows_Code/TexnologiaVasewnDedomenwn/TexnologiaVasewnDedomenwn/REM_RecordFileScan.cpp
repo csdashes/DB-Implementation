@@ -52,7 +52,7 @@ t_rc REM_RecordFileScan::GetNextRecord(REM_RecordHandle &rh)	{
 	if (!this->isOpen) { return REM_FSCLOSED; }
 	t_rc rc;
 	
-	
+	// KATI PAIZEI EDW PERA. DEN KATALAVAINW...
 	do {
 		char *pData;
 		int pageID;

@@ -39,7 +39,7 @@ t_rc SYSM_DatabaseManager::OpenDatabase (const char *dbName) {
 		return (SYSM_OTHERDBISOPEN);
 	}
 													//prepei na mpei elegxos ean YPARXEI db me onoma dbName, prin thn energopoihsei
-	activedb = (char*)malloc(sizeof(char)*strlen(dbName));
+	activedb = (char*)malloc(strlen(dbName));
 	strcpy(activedb,dbName);
 	open = true;
 	return OK;

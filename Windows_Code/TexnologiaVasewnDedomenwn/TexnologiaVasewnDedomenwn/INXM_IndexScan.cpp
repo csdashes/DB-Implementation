@@ -261,7 +261,7 @@ t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
 		return(INXM_FSEOF);
 	}
 	
-	int runner = 0;
+	int runner = -1;
 	INXM_Node node;
 	INXM_InitPageHeader leafInitPageHeader;
 	INXM_NodePageHeader leafNodePageHeader;
@@ -276,22 +276,18 @@ t_rc INXM_IndexScan::GetNextEntry(REM_RecordID &rid) {
 		if (rc != OK) { return rc; }
 		
 		do {
-			ReadNode(tmpLeafPageHandle, runner, node);
 			runner++;
+			ReadNode(tmpLeafPageHandle, runner, node);
 			//printf("%s\n",(char*)node.key);
 			//printf("%s\n",(char*)this->key);
 		} while (!StopCondition(node, this->key) && runner < leafInitPageHeader.nItems);
-		
-		if (KeyCmp(node.key, this->key) == 0) {
-			runner--;
-		}
 
-		if (runner > leafInitPageHeader.nItems) {
+		if (runner >= leafInitPageHeader.nItems) {
 			this->flag = true;
 			return(INXM_FSEOF);
 		}
 
-		if (this->compOp == LE_OP || this->compOp == GE_OP) {
+		if (this->compOp == LE_OP || this->compOp == GE_OP) { // NA ALLAXTEI
 			runner--;
 		}
 		

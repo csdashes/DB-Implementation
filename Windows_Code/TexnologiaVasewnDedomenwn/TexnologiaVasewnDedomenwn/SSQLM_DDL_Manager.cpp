@@ -32,11 +32,13 @@ t_rc SSQLM_DDL_Manager::CreateTable(const char *tName, const char *attributes){
 	str = (char*)malloc(attrlength);
 	strcpy(str,attributes);
 	char *tokens;
-	tokens = strtok (str,",");					//split the attributes
+	char *nextToken;
+
+	tokens = strtok_s (str,",", &nextToken);					//split the attributes
 	while (tokens != NULL)
 	{
 		numOfColumns++;
-		tokens = strtok (NULL, ",");
+		tokens = strtok_s (NULL, ",", &nextToken);
 	}
 
 	strcpy(str,attributes);
@@ -146,8 +148,9 @@ t_rc SSQLM_DDL_Manager::OpenAttrmet(char *dbName){
 t_rc SSQLM_DDL_Manager::EditAttrMet(char *str, const char *tName, int &recSize){
 
 	char *tokens;
+	char *nextToken;
 
-	tokens = strtok (str, ", ()");
+	tokens = strtok_s (str, ", ()", &nextToken);
 	char *char_token;
 	char *attrName;
 	char buffer[5];
@@ -180,7 +183,7 @@ t_rc SSQLM_DDL_Manager::EditAttrMet(char *str, const char *tName, int &recSize){
 		 }
 		 else if(strcmp(tokens,"CHAR") == 0){
 
-			 char_token = strtok (NULL, ", ()");
+			 char_token = strtok_s (NULL, ", ()", &nextToken);
 			 
 			 // Create the attribute record
 			 strcpy(attr_string,tName);
@@ -204,7 +207,7 @@ t_rc SSQLM_DDL_Manager::EditAttrMet(char *str, const char *tName, int &recSize){
 		 else{
 			 attrName = tokens;
 		 }
-		 tokens = strtok (NULL, ", ()");
+		 tokens = strtok_s (NULL, ", ()", &nextToken);
 	 }
 
 	rc = attrmet->FlushPages();
@@ -365,16 +368,17 @@ t_rc SSQLM_DDL_Manager::UpdateRelmetIndexes(const char *tName, REM_RecordHandle 
 
 
 	// Raise the number of indexes
-	indexNo = 0;									//number of indexes
-	char *tokens = strtok (pData,";");					//split the recordData
+	indexNo = 0;										//number of indexes
+	char *nextToken;
+	char *tokens = strtok_s (pData,";", &nextToken);	//split the recordData
 	while (tokens != NULL)
 	{
 		 if( i == 4 ){									//the field of the indexes number
 			 indexNo = atoi(tokens);
 			 if(increase)
-				 indexNo++;							//increase the number of indexes
+				 indexNo++;								//increase the number of indexes
 			 else
-				 indexNo--;							//decrease the number of indexes
+				 indexNo--;								//decrease the number of indexes
 			 tokens = itoa(indexNo,buffer,10);
 		 }
 		 if( i == 1 ){
@@ -386,7 +390,7 @@ t_rc SSQLM_DDL_Manager::UpdateRelmetIndexes(const char *tName, REM_RecordHandle 
 			strcat(new_relmet_record,";");
 		 }
 		 i++;
-		 tokens = strtok (NULL, ";");
+		 tokens = strtok_s (NULL, ";", &nextToken);
 	}
 	strcat(new_relmet_record,";");
 	memcpy(pData, new_relmet_record, 256);
@@ -412,8 +416,9 @@ t_rc SSQLM_DDL_Manager::UpdateAttrmetIndexNo(const char *tName, const char *attr
 	rc = rh.GetData(pData);
 	if (rc != OK) {return rc; }
 
+	char *nextToken;
 	// Retrieve attrType and attrLength and create the new attribute record raising the index number.
-	char *tokens = strtok (pData,";");	//split the recordData
+	char *tokens = strtok_s (pData,";", &nextToken);	//split the recordData
 	i = 1;
 	while (tokens != NULL)
 	{
@@ -438,7 +443,7 @@ t_rc SSQLM_DDL_Manager::UpdateAttrmetIndexNo(const char *tName, const char *attr
 			strcat(new_attrmet_record,";");
 		 }
 		 i++;
-		 tokens = strtok (NULL, ";");
+		 tokens = strtok_s (NULL, ";", &nextToken);
 	}
 	strcat(new_attrmet_record,";");
 	memcpy(pData, new_attrmet_record, 256);
@@ -451,7 +456,9 @@ t_rc SSQLM_DDL_Manager::UpdateAttrmetIndexNo(const char *tName, const char *attr
 }
 
 t_rc SSQLM_DDL_Manager::GetIndexNo(char *pData, int &indexNo){
-	char *tokens = strtok (pData,";");	//split the recordData
+
+	char *nextToken;
+	char *tokens = strtok_s (pData,";", &nextToken);	//split the recordData
 	char buffer[5];
 	int i = 1;
 
@@ -461,7 +468,7 @@ t_rc SSQLM_DDL_Manager::GetIndexNo(char *pData, int &indexNo){
 			 indexNo = atoi(tokens);
 		 }
 		 i++;
-		 tokens = strtok (NULL, ";");
+		 tokens = strtok_s (NULL, ";", &nextToken);
 	}
 
 	return OK;
