@@ -126,7 +126,22 @@ bool REM_RecordFileScan::SatisfiesConditions(const char *pData) const {
 	/* Get value of attribute at offset attrOffset */
 	switch (this->attrType) {
 		case TYPE_INT:
-			memcpy (&i1, &pData[this->attrOffset], 4);
+			// Make the string an integer.
+			int j;
+
+			char *indexEntry;
+			indexEntry = (char*)malloc(4);
+
+			/*for( j=0; j<size; j++){
+				indexEntry[j] = &pData[this->attrOffset+j];
+			}*/
+			memcpy (indexEntry, &pData[this->attrOffset], 4);
+			indexEntry[5] = '\0';
+			
+			i1 = atoi(indexEntry);
+
+			// If the data is integer it self and not a string.
+			//memcpy (&i1, &pData[this->attrOffset], 4);
 			i2 = *(int *)this->value;
 			break;
 		case TYPE_STRING:
