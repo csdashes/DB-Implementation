@@ -22,6 +22,7 @@ private:
 	t_rc GetConditionInfo(char *condition, char *&conditionAttribute, t_compOp &comp, char *&conditionValue);
 	t_rc FindAttributeInAttrmet(const char *tName, char *attributeName, int &offset, char *&type, int &size, int &indexID);
 	t_rc CheckIfTableHasIndexes(const char *tName,bool &hasIndexes);
+	t_rc GetTableRecordSize(char *tName, int &recordSize);
 
 public:
 
@@ -29,7 +30,7 @@ public:
 	~SSQLM_DML_Manager();
 
 	t_rc Select(const char *tName, vector<char *> columns, vector<char *> recordsFromWhereFunction, vector<char *> *finalResults);
-	t_rc Join(const char *table1, const char* table2, char *connectionAttribute);
+	t_rc Join(char *table1, char* table2, char *connectionAttribute);
 	t_rc Where(const char *tName, char *conditions, vector<char *> *finalResultRecords, vector<REM_RecordID> *finalResultsRIDs);
 	t_rc Insert(const char *tName, const char *record);
 	t_rc Delete(const char *tName, REM_RecordID ridsToDelete, char *recordsToDelete);

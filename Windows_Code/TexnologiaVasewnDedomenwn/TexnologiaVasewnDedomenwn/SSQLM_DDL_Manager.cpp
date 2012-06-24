@@ -58,7 +58,7 @@ t_rc SSQLM_DDL_Manager::CreateTable(const char *tName, const char *attributes){
 	return OK;
 }
 
-t_rc SSQLM_DDL_Manager::DropTable(const char *tName){
+t_rc SSQLM_DDL_Manager::DropTable(char *tName){
 
 	t_rc rc;
 	char pathname[50];
@@ -72,13 +72,13 @@ t_rc SSQLM_DDL_Manager::DropTable(const char *tName){
 	return OK;
 }
 
-t_rc SSQLM_DDL_Manager::CreateIndex(const char *tName, const char *attrName){
+t_rc SSQLM_DDL_Manager::CreateIndex(char *tName, const char *attrName){
 
 	t_attrType attrType;
 	int attrLength;
 	int indexNo;
 	REM_RecordHandle rh;
-	REM_RecordHandle rh2;
+	REM_RecordHandle *rh2 = new REM_RecordHandle();
 	char pathname[50];
 	t_rc rc;
 
@@ -87,7 +87,7 @@ t_rc SSQLM_DDL_Manager::CreateIndex(const char *tName, const char *attrName){
 	if (rc != OK) { return rc; }
 
 	// UPDATE THE ATTR.MET FILE
-	rc = UpdateAttrmetIndexNo(tName,attrName,rh2,attrType,attrLength,indexNo);
+	rc = UpdateAttrmetIndexNo(tName,attrName,*rh2,attrType,attrLength,indexNo);
 	if (rc != OK) {return rc; }
 
 	// Create the index file
@@ -98,7 +98,7 @@ t_rc SSQLM_DDL_Manager::CreateIndex(const char *tName, const char *attrName){
 	return OK;
 }
 
-t_rc SSQLM_DDL_Manager::DropIndex(const char *tName, const char *attrName, int indexNo){
+t_rc SSQLM_DDL_Manager::DropIndex(char *tName, const char *attrName, int indexNo){
 	REM_RecordHandle rh;
 	REM_RecordHandle rh2;
 	INXM_IndexHandle ih;
@@ -277,14 +277,21 @@ t_rc SSQLM_DDL_Manager::FindRecordInAttrMet(const char *tName, REM_RecordHandle 
 	return OK;
 }
 
-t_rc SSQLM_DDL_Manager::FindRecordInAttrMet(const char *tName,const char *attrName, REM_RecordHandle &rh){
+t_rc SSQLM_DDL_Manager::FindRecordInAttrMet(char *tName,const char *attrName, REM_RecordHandle &rh){
 
 	t_rc rc;
 	REM_RecordFileScan *rfs = new REM_RecordFileScan();
 
-	int tNameLength = strlen(tName);
-	int attrNameLength = strlen(attrName);
-	rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,attrNameLength, tNameLength+1, EQ_OP, (char*)attrName);
+	int attributeLength = strlen(attrName);
+	int tableLength = strlen(tName);
+	int tableNattributeLength = attributeLength + tableLength + 1;
+
+	char *tableANDattribute = (char *)malloc(tableNattributeLength);
+	strcpy(tableANDattribute,tName);
+	strcat(tableANDattribute,";");
+	strcat(tableANDattribute,attrName);
+
+	rc = rfs->OpenRecordScan(*attrmet,TYPE_STRING,tableNattributeLength, 0, EQ_OP, tableANDattribute);
 	if (rc != OK) {return rc; }
 
 	rc = rfs->GetNextRecord(rh);
@@ -402,13 +409,12 @@ t_rc SSQLM_DDL_Manager::UpdateRelmetIndexes(const char *tName, REM_RecordHandle 
 	return OK;
 }
 
-t_rc SSQLM_DDL_Manager::UpdateAttrmetIndexNo(const char *tName, const char *attrName, REM_RecordHandle &rh, t_attrType &attrType, int &attrLength, int indexNo){
+t_rc SSQLM_DDL_Manager::UpdateAttrmetIndexNo(char *tName, const char *attrName, REM_RecordHandle &rh, t_attrType &attrType, int &attrLength, int indexNo){
 	int i = 1;
-	char new_attrmet_record[256];						
+	char *new_attrmet_record;						
 	char buffer[5];
 	t_rc rc;
 	char *pData;
-	
 	//Find the record with attribute name "attrName"
 	rc = FindRecordInAttrMet(tName,attrName,rh);
 	if (rc != OK) {return rc; }
@@ -416,9 +422,14 @@ t_rc SSQLM_DDL_Manager::UpdateAttrmetIndexNo(const char *tName, const char *attr
 	rc = rh.GetData(pData);
 	if (rc != OK) {return rc; }
 
+	char *data = (char *)malloc(strlen(pData));
+	strcpy(data,pData);
+
+	new_attrmet_record = (char*)malloc(strlen(pData));
+
 	char *nextToken;
 	// Retrieve attrType and attrLength and create the new attribute record raising the index number.
-	char *tokens = strtok_s (pData,";", &nextToken);	//split the recordData
+	char *tokens = strtok_s (data,";", &nextToken);	//split the recordData
 	i = 1;
 	while (tokens != NULL)
 	{

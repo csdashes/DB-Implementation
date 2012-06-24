@@ -388,11 +388,17 @@ void testSSQLM() {
 	rc = ddlm->CreateTable("table1","id INT, name CHAR(15), age INT");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
+	rc = ddlm->CreateTable("table2","age INT, born INT");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}
+
 	// Create index
 	rc = ddlm->CreateIndex("table1","name");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 	rc = ddlm->CreateIndex("table1","age");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	rc = ddlm->CreateIndex("table2","age");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 
 
@@ -437,6 +443,23 @@ void testSSQLM() {
 
 	rc = dmlm->Insert("table1","4___PETROS_________18__");
 	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	rc = dmlm->Insert("table1","5___PAYLOS_________22__");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}
+
+
+
+	rc = dmlm->Insert("table2","22__1990");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	rc = dmlm->Insert("table2","25__1987");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	rc = dmlm->Insert("table2","30__1980");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
+
+	rc = dmlm->Insert("table2","18__1994");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}	
 	
 
 
@@ -460,73 +483,76 @@ void testSSQLM() {
 	vector <char*> finalResultRecords3;
 	vector <REM_RecordID> finalResultRIDs3;
 
-	dmlm3->Where("table1","id>0",&finalResultRecords3,&finalResultRIDs3);			//************************************
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**	Show all records
-																					//**
-	cout<<"ALL RECORDS IN THE TABLE:"<<endl;										//**	(SELECT *
-	for(int interator = 0; interator < (int)finalResultRecords3.size(); interator++){		//**		FROM table1
-		finalResultRIDs3[interator].GetSlot(slott);									//**		WHERE id>0)
-		cout<<slott<<" -> "<<finalResultRecords3[interator]<<endl;					//**
-	}																				//*************************************
-	cout<<endl;
+	//dmlm3->Where("table1","id>0",&finalResultRecords3,&finalResultRIDs3);			//************************************
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**	Show all records
+	//																				//**
+	//cout<<"ALL RECORDS IN THE TABLE:"<<endl;										//**	(SELECT *
+	//for(int interator = 0; interator < (int)finalResultRecords3.size(); interator++){		//**		FROM table1
+	//	finalResultRIDs3[interator].GetSlot(slott);									//**		WHERE id>0)
+	//	cout<<slott<<" -> "<<finalResultRecords3[interator]<<endl;					//**
+	//}																				//*************************************
+	//cout<<endl;
 
-	int until;																		//*************************************
-	do {																			//**	TEST DELETE
-		vector <char*> finalResultRecords2;											//**
-		vector <REM_RecordID> finalResultRIDs2;										//**
-																					//**	(DELETE
-		dmlm3->Where("table1","age>25",&finalResultRecords2,&finalResultRIDs2);		//**		FROM	table1
-		if (rc != OK) {DisplayReturnCode(rc);exit(-1);}								//**		WHERE	age > 25)
-																					//**
-		if(finalResultRecords2.size()!=0){											//**
-			dmlm3->Delete("table1",finalResultRIDs2[0],finalResultRecords2[0]);		//**
-			if (rc != OK) {DisplayReturnCode(rc);exit(-1);}							//**
-		}																			//**
-		until = finalResultRecords2.size();											//**	
-	}while(until != 0);																//**
-																					//**
-	vector <char*> finalResultRecords;												//**
-	vector <REM_RecordID> finalResultRIDs;											//**
-																					//**
-	dmlm3->Where("table1","id>0",&finalResultRecords,&finalResultRIDs);				//**
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**
-																					//**
-	cout<<"TEST DELETE. ALL RECORDS IN THE TABLE (DELETE WHERE age > 25):"<<endl;	//**	Show all records after delete
-	for(int interator = 0; interator < (int)finalResultRecords.size(); interator++){		//**
-		finalResultRIDs[interator].GetSlot(slott);									//**
-		cout<<slott<<" -> "<<finalResultRecords[interator]<<endl;					//**
-	}																				//**************************************
-	cout<<endl;
+	//int until;																		//*************************************
+	//do {																			//**	TEST DELETE
+	//	vector <char*> finalResultRecords2;											//**
+	//	vector <REM_RecordID> finalResultRIDs2;										//**
+	//																				//**	(DELETE
+	//	dmlm3->Where("table1","age>25",&finalResultRecords2,&finalResultRIDs2);		//**		FROM	table1
+	//	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}								//**		WHERE	age > 25)
+	//																				//**
+	//	if(finalResultRecords2.size()!=0){											//**
+	//		dmlm3->Delete("table1",finalResultRIDs2[0],finalResultRecords2[0]);		//**
+	//		if (rc != OK) {DisplayReturnCode(rc);exit(-1);}							//**
+	//	}																			//**
+	//	until = finalResultRecords2.size();											//**	
+	//}while(until != 0);																//**
+	//																				//**
+	//vector <char*> finalResultRecords;												//**
+	//vector <REM_RecordID> finalResultRIDs;											//**
+	//																				//**
+	//dmlm3->Where("table1","id>0",&finalResultRecords,&finalResultRIDs);				//**
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**
+	//																				//**
+	//cout<<"TEST DELETE. ALL RECORDS IN THE TABLE (DELETE WHERE age > 25):"<<endl;	//**	Show all records after delete
+	//for(int interator = 0; interator < (int)finalResultRecords.size(); interator++){		//**
+	//	finalResultRIDs[interator].GetSlot(slott);									//**
+	//	cout<<slott<<" -> "<<finalResultRecords[interator]<<endl;					//**
+	//}																				//**************************************
+	//cout<<endl;
 
-	vector <char*> finalResultRecordsSelect;										//**************************************
-	vector <char*> columns;															//**	TEST SELECT
-	columns.push_back("name");														//**	kanw push ta columns pou 8elw na krathsw
-	columns.push_back("age");														//**
-	//columns.push_back("*");														//**	(SELECT name, age
-																					//**		FROM table1
-	dmlm3->Select("table1",columns,finalResultRecords,&finalResultRecordsSelect);	//**		WHERE id > 0)
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**
-																					//**
-	cout<<"TEST SELECT. RECORDS CHOPPED BY SELECT( name, age ):"<<endl;				//**
-	for(int interator = 0; interator < (int)finalResultRecordsSelect.size(); interator++){//**
-		cout<<finalResultRecordsSelect[interator]<<endl;							//**
-	}																				//**************************************
-	cout<<endl;
+	//vector <char*> finalResultRecordsSelect;										//**************************************
+	//vector <char*> columns;															//**	TEST SELECT
+	//columns.push_back("name");														//**	kanw push ta columns pou 8elw na krathsw
+	//columns.push_back("age");														//**
+	////columns.push_back("*");														//**	(SELECT name, age
+	//																				//**		FROM table1
+	//dmlm3->Select("table1",columns,finalResultRecords,&finalResultRecordsSelect);	//**		WHERE id > 0)
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**
+	//																				//**
+	//cout<<"TEST SELECT. RECORDS CHOPPED BY SELECT( name, age ):"<<endl;				//**
+	//for(int interator = 0; interator < (int)finalResultRecordsSelect.size(); interator++){//**
+	//	cout<<finalResultRecordsSelect[interator]<<endl;							//**
+	//}																				//**************************************
+	//cout<<endl;
 
-	vector <char*> finalResultRecords4;												//**************************************
-	vector <REM_RecordID> finalResultRIDs4;											//**	TEST UPDATE
-																					//**
-	dmlm3->Where("table1","id<2",&finalResultRecords4,&finalResultRIDs4);			//**		
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**	(UPDATE table1
-																					//**		set age = 30
-	dmlm3->Update("table1",finalResultRIDs4,"age=30__");							//**		WHERE id < 2)
-	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**
-																					//**
-	cout<<"TEST UPDATE. RECORDS AFTER UPDATE set age=30 WHERE id<2:"<<endl;			//**
-	for(int interator = 0; interator < (int)finalResultRecords4.size(); interator++){		//**
-		cout<<finalResultRecords4[interator]<<endl;									//**
-	}																				//**
-	cout<<endl;																		//**************************************
+	//vector <char*> finalResultRecords4;												//**************************************
+	//vector <REM_RecordID> finalResultRIDs4;											//**	TEST UPDATE
+	//																				//**
+	//dmlm3->Where("table1","id<2",&finalResultRecords4,&finalResultRIDs4);			//**		
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**	(UPDATE table1
+	//																				//**		set age = 30
+	//dmlm3->Update("table1",finalResultRIDs4,"age=30__");							//**		WHERE id < 2)
+	//if (rc != OK) {DisplayReturnCode(rc);exit(-1);}									//**
+	//																				//**
+	//cout<<"TEST UPDATE. RECORDS AFTER UPDATE set age=30 WHERE id<2:"<<endl;			//**
+	//for(int interator = 0; interator < (int)finalResultRecords4.size(); interator++){		//**
+	//	cout<<finalResultRecords4[interator]<<endl;									//**
+	//}																				//**
+	//cout<<endl;																		//**************************************
+
+	rc = dmlm3->Join("table1","table2","age");
+	if (rc != OK) {DisplayReturnCode(rc);exit(-1);}
 
 	system("pause");
 }

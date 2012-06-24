@@ -263,6 +263,8 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, vector<char *
 
 		remrh->GetData(pdata);
 
+		cout<<"AAAAAAAAAAAAAAAA  "<<pdata<<"  AAAAAAAAAA"<<endl;
+
 		int pDataLength = strlen(pdata);
 		char * newInput;
 		newInput = (char *)malloc(pDataLength);
@@ -636,15 +638,19 @@ t_rc SSQLM_DML_Manager::Update(const char *tName, vector<REM_RecordID> ridsFromW
 	return OK;
 }
 
-t_rc SSQLM_DML_Manager::Join(const char *table1, const char* table2, char *connectionAttribute){
+t_rc SSQLM_DML_Manager::Join(char *table1, char* table2, char *connectionAttribute){
 
 	STORM_StorageManager *stormgr = new STORM_StorageManager();				
 	REM_RecordFileManager *remrfm = new REM_RecordFileManager(stormgr);	
 	REM_RecordFileHandle *remrfh = new REM_RecordFileHandle();
+	REM_RecordFileScan *remrfs = new REM_RecordFileScan();
+	REM_RecordHandle *remrh = new REM_RecordHandle;
 
 	STORM_StorageManager *stormgr2 = new STORM_StorageManager();				
 	REM_RecordFileManager *remrfm2 = new REM_RecordFileManager(stormgr2);	
 	REM_RecordFileHandle *remrfh2 = new REM_RecordFileHandle();
+	REM_RecordFileScan *remrfs2 = new REM_RecordFileScan();
+	REM_RecordHandle *remrh2 = new REM_RecordHandle;
 
 	char pathname[50];
 	int offset,
@@ -652,9 +658,15 @@ t_rc SSQLM_DML_Manager::Join(const char *table1, const char* table2, char *conne
 		size,
 		size2,
 		indexID,
-		indexID2;
-	char *type,
-		*type2;
+		indexID2,
+		recordSize1,
+		recordSize2;
+	char *typeString,
+		*typeString2,
+		*pData1,
+		*pData2;
+	t_attrType type1,
+		type2;
 
 	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,table1);
 	t_rc rc = remrfm->OpenRecordFile(pathname,*remrfh);
@@ -664,13 +676,112 @@ t_rc SSQLM_DML_Manager::Join(const char *table1, const char* table2, char *conne
 	rc = remrfm2->OpenRecordFile(pathname,*remrfh2);
 	if (rc != OK) { return rc; }
 
-	rc = FindAttributeInAttrmet(table1,connectionAttribute,offset,type,size,indexID);
+	rc = FindAttributeInAttrmet(table1,connectionAttribute,offset,typeString,size,indexID);
 	if (rc != OK) { return rc; }
 
-	rc = FindAttributeInAttrmet(table2,connectionAttribute,offset,type,size,indexID);
+	if(strcmp(typeString,"TYPE_INT") == 0)
+		type1 = TYPE_INT;
+	else
+		type1 = TYPE_STRING;
+
+	rc = FindAttributeInAttrmet(table2,connectionAttribute,offset2,typeString2,size2,indexID2);
 	if (rc != OK) { return rc; }
 
+	if(strcmp(typeString2,"TYPE_INT") == 0)
+		type2 = TYPE_INT;
+	else
+		type2 = TYPE_STRING;
 
+	rc = GetTableRecordSize(table1,recordSize1);
+	if (rc != OK) { return rc; }
+
+	rc = GetTableRecordSize(table2,recordSize2);
+	if (rc != OK) { return rc; }
+
+	rc = remrfs->OpenRecordScan(*remrfh,type1,0,0,NO_OP,NULL);
+	if (rc != OK) { return rc; }
+
+	while( remrfs->GetNextRecord(*remrh) != REM_FSEOF ){
+
+		rc = remrh->GetData(pData1);
+		if (rc != OK) { return rc; }
+
+		char *connectionValue = (char *)malloc(size);
+		int i;
+
+		for(i=0; i<size; i++){
+			connectionValue[i] = pData1[i+offset];
+		}
+		connectionValue[i] = '\0';
+
+		char *firstRecord = (char *)malloc(strlen(pData1));
+		strcpy(firstRecord,pData1);
+		firstRecord[recordSize1] = '\0';
+
+		if( indexID2 != -1 ){
+
+			INXM_IndexHandle ih;
+			INXM_IndexScan *is = new INXM_IndexScan();
+			char pathname[50];
+			REM_RecordID rid;
+			int slot;
+
+			_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,table2);								
+			rc = im->OpenIndex(pathname,indexID2,ih);					
+			if (rc != OK) { return rc; }									
+																		
+			if(strcmp(typeString,"TYPE_INT") == 0){	// case of Integer								
+					int cndV = atoi(connectionValue);						
+					int *key1 = new int(cndV);							
+					rc = is->OpenIndexScan(ih, EQ_OP, key1);								
+					if (rc != OK) { return rc; }							
+				}																
+			else{		//case of string									
+				rc = is->OpenIndexScan(ih, EQ_OP, connectionValue);			
+				if (rc != OK) { return rc; }										
+			}
+
+			while( is->GetNextEntry(rid) != INXM_FSEOF){
+
+				rc = remrfh2->ReadRecord(rid,*remrh2);
+				if (rc != OK) {return rc; }	
+
+				remrh2->GetData(pData2);
+				int pDataLength = strlen(pData2);
+				char *final;
+				if(offset2!=0){
+					char *semifinal = (char*)malloc(offset2);
+					memcpy(semifinal,pData2,offset2);
+
+					char *newInput;
+					newInput = (char *)malloc(pDataLength-size2);
+					int j;
+					int limit = pDataLength-(offset2+size2);
+					for(j=0; j<limit; j++){
+						newInput[j] = pData2[j+offset2+size2];
+					}
+					newInput[j] = '\0';
+					final = (char *)realloc(semifinal,strlen(newInput));
+					strcpy(final,newInput);
+
+				}
+				else{
+					final = (char *)malloc(pDataLength-size2);
+					int j;
+					for(j=0; j<pDataLength-size; j++){
+						final[j] = pData2[j+size2];
+					}
+					final[recordSize2-size2] = '\0';
+				}
+				
+				char *newRecord = (char *)malloc(strlen(firstRecord)+strlen(final));
+				strcpy(newRecord,firstRecord);
+				strcat(newRecord,final);
+				cout<<newRecord<<endl;
+
+			}
+		}
+	}
 
 
 
@@ -836,6 +947,43 @@ t_rc SSQLM_DML_Manager::CheckIfTableHasIndexes(const char *tName, bool &hasIndex
 	}
 
 	rc = rfs->CloseRecordScan();
+
+	return OK;
+}
+
+t_rc SSQLM_DML_Manager::GetTableRecordSize(char *tName, int &recordSize){
+
+	char *tokens;
+	char *nextToken;
+	int i = 1;
+
+	REM_RecordFileScan *rfs = new REM_RecordFileScan();
+	REM_RecordHandle rh;
+	char *pData;
+
+	t_rc rc = rfs->OpenRecordScan(*relmet,TYPE_STRING,strlen(tName), 0, EQ_OP, tName);	//	kai psakse mesa sto attrmet to record gia to sygkekrimeno attribute tou sygkekrimenou table
+	if (rc != OK) {return rc; }
+
+	rc = rfs->GetNextRecord(rh);
+	if (rc != OK) {return rc; }
+	
+	rc = rh.GetData(pData);
+	if (rc != OK) {return rc; }
+
+	char *rec = (char *)malloc(strlen(pData));
+	strcpy(rec,pData);
+	
+	tokens = strtok_s (rec,";", &nextToken);					
+
+	while (tokens != NULL){
+		if( i == 2 )
+			recordSize = atoi(tokens);
+		i++;
+		tokens = strtok_s (NULL, ";", &nextToken);
+	}
+
+	rc = rfs->CloseRecordScan();
+	if (rc != OK) {return rc; }
 
 	return OK;
 }
