@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "SSQLM_DML_Manager.h"
+#include "SSQLM_DDL_Manager.h"
 #include <string>
 #include <iostream>
 #include <cstring>
@@ -640,6 +641,20 @@ t_rc SSQLM_DML_Manager::Update(const char *tName, vector<REM_RecordID> ridsFromW
 
 t_rc SSQLM_DML_Manager::Join(char *table1, char* table2, char *connectionAttribute){
 
+	//	Gia na kanoume to JOIN, anoigoume to table1 kai pairnoume seiriaka ena-ena ta records tou.
+	//	Apo ka8e record, kratame thn timh pou 8a ginei h syndesh, kai me authn psaxnoume sto
+	//	table2 na vroume poia records exoun thn timh auth sto column ths syndeshs. H anazhthsh 
+	//	pragmatopoieitai eite me index( ean to table2 exei index gia to column ths syndeshs)
+	//	eite se periptwsh pou den exei index, anoigontas to arxeio tou table table2.
+	//	Gia ka8e record pou vre8hke sto table2, dhmiourgeitai to neo record pou perilamvanei
+	//	ta attributes kai apo ta 2 tables ths syndeshs ( fysika to attribute ths syndeshs 
+	//	emfanizetai 1 mono fora ).
+	//	Afou dhmiourgh8oun ta nea records (ta opoia apoteloun ousiastika to join twn 2 pinakwn),
+	//	anadhmiourgoume ta string gia thn kataskeyh twn 2 tables (px: id INT, name CHAR(15), age INT...)
+	//	Auto to kanoume gia na ftiaksoume to neo string gia thn kataskeuh tou tempTableForIndex,
+	//	ston opoio me mia epanalhpsh, kanoume insert ta nea records ths syndeshs.
+	//	H synarthsh auth mporei na klei8ei anadromika wste na ginoun join apeirwn pinakwn.
+
 	STORM_StorageManager *stormgr = new STORM_StorageManager();				
 	REM_RecordFileManager *remrfm = new REM_RecordFileManager(stormgr);	
 	REM_RecordFileHandle *remrfh = new REM_RecordFileHandle();
@@ -652,6 +667,11 @@ t_rc SSQLM_DML_Manager::Join(char *table1, char* table2, char *connectionAttribu
 	REM_RecordFileScan *remrfs2 = new REM_RecordFileScan();
 	REM_RecordHandle *remrh2 = new REM_RecordHandle;
 
+	STORM_StorageManager *mgrTemp = new STORM_StorageManager();
+	REM_RecordFileManager *rfmTemp = new REM_RecordFileManager(mgrTemp);
+	INXM_IndexManager *imTemp = new INXM_IndexManager(mgrTemp);
+	SSQLM_DDL_Manager *ddlmTemp = new SSQLM_DDL_Manager(rfm,im,"testingDB");
+
 	char pathname[50];
 	int offset,
 		offset2,
@@ -663,10 +683,11 @@ t_rc SSQLM_DML_Manager::Join(char *table1, char* table2, char *connectionAttribu
 		recordSize2;
 	char *typeString,
 		*typeString2,
-		*pData1,
-		*pData2;
+		*pData1;
 	t_attrType type1,
 		type2;
+	REM_RecordID rid;
+	vector<char *> newTableRecords; 
 
 	_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,table1);
 	t_rc rc = remrfm->OpenRecordFile(pathname,*remrfh);
@@ -700,13 +721,14 @@ t_rc SSQLM_DML_Manager::Join(char *table1, char* table2, char *connectionAttribu
 
 	rc = remrfs->OpenRecordScan(*remrfh,type1,0,0,NO_OP,NULL);
 	if (rc != OK) { return rc; }
+	
+	char *connectionValue = (char *)malloc(size);
 
 	while( remrfs->GetNextRecord(*remrh) != REM_FSEOF ){
 
 		rc = remrh->GetData(pData1);
 		if (rc != OK) { return rc; }
 
-		char *connectionValue = (char *)malloc(size);
 		int i;
 
 		for(i=0; i<size; i++){
@@ -717,14 +739,13 @@ t_rc SSQLM_DML_Manager::Join(char *table1, char* table2, char *connectionAttribu
 		char *firstRecord = (char *)malloc(strlen(pData1));
 		strcpy(firstRecord,pData1);
 		firstRecord[recordSize1] = '\0';
+		char *newRecord;
 
-		if( indexID2 != -1 ){
+		if( indexID2 != -1 ){	//	CASE INDEX
 
 			INXM_IndexHandle ih;
 			INXM_IndexScan *is = new INXM_IndexScan();
 			char pathname[50];
-			REM_RecordID rid;
-			int slot;
 
 			_snprintf_s(pathname,sizeof(pathname),"%s/%s",dbName,table2);								
 			rc = im->OpenIndex(pathname,indexID2,ih);					
@@ -742,49 +763,62 @@ t_rc SSQLM_DML_Manager::Join(char *table1, char* table2, char *connectionAttribu
 			}
 
 			while( is->GetNextEntry(rid) != INXM_FSEOF){
-
-				rc = remrfh2->ReadRecord(rid,*remrh2);
-				if (rc != OK) {return rc; }	
-
-				remrh2->GetData(pData2);
-				int pDataLength = strlen(pData2);
-				char *final;
-				if(offset2!=0){
-					char *semifinal = (char*)malloc(offset2);
-					memcpy(semifinal,pData2,offset2);
-
-					char *newInput;
-					newInput = (char *)malloc(pDataLength-size2);
-					int j;
-					int limit = pDataLength-(offset2+size2);
-					for(j=0; j<limit; j++){
-						newInput[j] = pData2[j+offset2+size2];
-					}
-					newInput[j] = '\0';
-					final = (char *)realloc(semifinal,strlen(newInput));
-					strcpy(final,newInput);
-
-				}
-				else{
-					final = (char *)malloc(pDataLength-size2);
-					int j;
-					for(j=0; j<pDataLength-size; j++){
-						final[j] = pData2[j+size2];
-					}
-					final[recordSize2-size2] = '\0';
-				}
 				
-				char *newRecord = (char *)malloc(strlen(firstRecord)+strlen(final));
-				strcpy(newRecord,firstRecord);
-				strcat(newRecord,final);
-				cout<<newRecord<<endl;
-
+				rc = ConCatRecords(rid,remrfh2,remrh2,offset2,size2,recordSize2,firstRecord,newRecord);
+				if (rc != OK) { return rc; }
 			}
 		}
+		else{	// CASE NO INDEX
+				if(strcmp(typeString,"TYPE_INT") == 0){	// case of Integer								
+					int cndV = atoi(connectionValue);						
+					int *key1 = new int(cndV);							
+					rc = remrfs2->OpenRecordScan(*remrfh2,type2,size2,offset2,EQ_OP,key1);								
+					if (rc != OK) { return rc; }							
+				}	
+				else{
+					rc = remrfs2->OpenRecordScan(*remrfh2,type2,size2,offset2,EQ_OP,connectionValue);								
+					if (rc != OK) { return rc; }
+				}
+
+				while( remrfs2->GetNextRecord(*remrh2) != REM_FSEOF ){
+					remrh2->GetRecordID(rid);
+					rc = ConCatRecords(rid,remrfh2,remrh2,offset2,size2,recordSize2,firstRecord,newRecord);
+					if (rc != OK) { return rc; }
+				}
+		}
+		cout<<newRecord<<endl;
+		newTableRecords.push_back(newRecord);
 	}
 
+	// Find all the records in attr.met about table1
+	char *tableDefinition;
+	rc = RebuildTableDefinition(table1,tableDefinition);
+	if (rc != OK) { return rc; }
+	
+	char *tableDefinition2;
+	rc = RebuildTableDefinitionChopped(table2,tableDefinition2,connectionAttribute);
+	if (rc != OK) { return rc; }
 
+	char *newTableDefinition = (char *)malloc(strlen(tableDefinition)+strlen(tableDefinition2) + 2);
 
+	strcpy(newTableDefinition,tableDefinition);
+	strcat(newTableDefinition,", ");
+	strcat(newTableDefinition,tableDefinition2);
+	
+	if( strcmp(table1,"tempTableForJoin") == 0 ){
+		rc = ddlmTemp->DropTable("tempTableForJoin");
+		if (rc != OK) { return rc; }
+	}
+
+	rc = ddlmTemp->CreateTable("tempTableForJoin",newTableDefinition);
+	if (rc != OK) { return rc; }
+	
+	SSQLM_DML_Manager *dmlmTemp = new SSQLM_DML_Manager(rfmTemp,imTemp,"testingDB");
+
+	for( int t = 0; t < (int) newTableRecords.size(); t++ ){
+		rc = dmlmTemp->Insert("tempTableForJoin",newTableRecords[t]);
+		if (rc != OK) { return rc; }
+	}
 
 
 
@@ -793,6 +827,16 @@ t_rc SSQLM_DML_Manager::Join(char *table1, char* table2, char *connectionAttribu
 
 	rc = remrfm2->CloseRecordFile(*remrfh2);
 	if (rc != OK) { return rc; }
+
+	delete stormgr, stormgr2, mgrTemp,
+		remrfm,	remrfm2, rfmTemp,
+		remrfh, remrfh2,
+		remrfs, remrfs2,
+		remrh,remrh2,
+		imTemp,ddlmTemp,dmlmTemp;
+
+
+
 
 	return OK;
 }
@@ -821,6 +865,44 @@ t_rc SSQLM_DML_Manager::GetAttrInfo(char *rec, int &offset, char *&type, int &si
 		}
 		else if( i == 5 ){
 			size = atoi(tokens);
+		}
+		else if( i == 6 ){
+			indexID = atoi(tokens);
+		}
+		i++;
+		tokens = strtok_s (NULL, ";", &nextToken);
+	}
+
+	return OK;
+}
+
+//	Synarthsh pou spaei ena record apo to attrmet arxeio sta systatika tou
+t_rc SSQLM_DML_Manager::GetAttrInfoJoin(char *rec, char *&attrName, int &offset, char *&type, char *&size, int &indexID){
+
+	char *tokens;
+	char *nextToken;
+	int i = 1;
+	
+	tokens = strtok_s (rec,";", &nextToken);					
+
+	while (tokens != NULL){
+		if( i == 2 ){
+			int len = strlen(tokens);
+			attrName = (char*)malloc(len);
+			strcpy(attrName,tokens);
+		}
+		if( i == 3 ){
+			offset = atoi(tokens);
+		}
+		else if( i == 4 ){
+			int len = strlen(tokens);
+			type = (char*)malloc(len);
+			strcpy(type,tokens);
+		}
+		else if( i == 5 ){
+			int len = strlen(tokens);
+			size = (char*)malloc(len);
+			strcpy(size,tokens);
 		}
 		else if( i == 6 ){
 			indexID = atoi(tokens);
@@ -984,6 +1066,174 @@ t_rc SSQLM_DML_Manager::GetTableRecordSize(char *tName, int &recordSize){
 
 	rc = rfs->CloseRecordScan();
 	if (rc != OK) {return rc; }
+
+	return OK;
+}
+
+t_rc SSQLM_DML_Manager::ConCatRecords(REM_RecordID rid, REM_RecordFileHandle *remrfh2, REM_RecordHandle *remrh2, int offset2, int size2, int recordSize2, char *firstRecord, char *&newRecord){
+
+	char *pData2;
+	t_rc rc = remrfh2->ReadRecord(rid,*remrh2);
+	if (rc != OK) {return rc; }	
+
+	remrh2->GetData(pData2);
+	int pDataLength = strlen(pData2);
+	char *final;
+	if(offset2!=0){
+		char *semifinal = (char*)malloc(offset2);
+		memcpy(semifinal,pData2,offset2);
+
+		char *newInput;
+		newInput = (char *)malloc(pDataLength-size2);
+		int j;
+		int limit = pDataLength-(offset2+size2);
+		for(j=0; j<limit; j++){
+			newInput[j] = pData2[j+offset2+size2];
+		}
+		newInput[j] = '\0';
+		final = (char *)realloc(semifinal,strlen(newInput));
+		strcpy(final,newInput);
+
+	}
+	else{
+		final = (char *)malloc(pDataLength-size2);
+		int j;
+		for(j=0; j<pDataLength-size2; j++){
+			final[j] = pData2[j+size2];
+		}
+		final[recordSize2-size2] = '\0';
+	}
+				
+	newRecord = (char *)malloc(strlen(firstRecord)+strlen(final));
+	strcpy(newRecord,firstRecord);
+	strcat(newRecord,final);
+
+	return OK;
+}
+
+t_rc SSQLM_DML_Manager::RebuildTableDefinition(char *tName, char *&tableDefinition){
+
+	int tableLength = strlen(tName);
+
+	REM_RecordFileScan *rfsAttrmet = new REM_RecordFileScan();
+	REM_RecordHandle rhAttrmet;
+	char *pDataAttrmet,
+		*typeAttrmet,
+		*sizeAttrmet,
+		*attrName;
+	int offsetAttrmet,
+		indexIDAttrmet;
+
+	t_rc rc = rfsAttrmet->OpenRecordScan(*attrmet,TYPE_STRING,tableLength, 0, EQ_OP, tName);
+	if (rc != OK) {return rc; }
+
+	vector<char *> allAttrInfo;
+	int sumOfSingleLength = 0;
+
+	while( rfsAttrmet->GetNextRecord(rhAttrmet) != REM_FSEOF ){
+
+		rc = rhAttrmet.GetData(pDataAttrmet);
+		if (rc != OK) {return rc; }
+
+		char *attrmetRecord = (char *)malloc(strlen(pDataAttrmet));
+		strcpy(attrmetRecord,pDataAttrmet);
+
+		rc = GetAttrInfoJoin(attrmetRecord,attrName,offsetAttrmet,typeAttrmet,sizeAttrmet,indexIDAttrmet);
+		if (rc != OK) {return rc; }
+
+		char *singleAttrInfo;
+		if( strcmp(typeAttrmet,"TYPE_INT") == 0 ){
+			int signleLength = strlen(attrName)+4;
+			singleAttrInfo = (char *)malloc(signleLength);
+			strcpy(singleAttrInfo,attrName);
+			strcat(singleAttrInfo," INT");
+			sumOfSingleLength += signleLength+1;
+		}
+		else{
+			int signleLength = strlen(attrName)+7+strlen(sizeAttrmet);
+			singleAttrInfo = (char *)malloc(signleLength);
+			strcpy(singleAttrInfo,attrName);
+			strcat(singleAttrInfo," CHAR(");
+			strcat(singleAttrInfo,sizeAttrmet);
+			strcat(singleAttrInfo,")");
+			sumOfSingleLength += signleLength+1;
+		}
+		allAttrInfo.push_back(singleAttrInfo);
+	}
+	tableDefinition = (char *)malloc(sumOfSingleLength);
+	for( int v = 0; v < (int) allAttrInfo.size(); v++ ){
+		if( v == 0 )
+			strcpy(tableDefinition,allAttrInfo[v]);
+		else
+			strcat(tableDefinition,allAttrInfo[v]);
+		if( v != (int) allAttrInfo.size()-1 )
+			strcat(tableDefinition,", ");
+	}
+
+	return OK;
+}
+
+t_rc SSQLM_DML_Manager::RebuildTableDefinitionChopped(char *tName, char *&tableDefinition, char *connectionAttribute){
+
+	int tableLength = strlen(tName);
+
+	REM_RecordFileScan *rfsAttrmet = new REM_RecordFileScan();
+	REM_RecordHandle rhAttrmet;
+	char *pDataAttrmet,
+		*typeAttrmet,
+		*sizeAttrmet,
+		*attrName;
+	int offsetAttrmet,
+		indexIDAttrmet;
+
+	t_rc rc = rfsAttrmet->OpenRecordScan(*attrmet,TYPE_STRING,tableLength, 0, EQ_OP, tName);
+	if (rc != OK) {return rc; }
+
+	vector<char *> allAttrInfo;
+	int sumOfSingleLength = 0;
+
+	while( rfsAttrmet->GetNextRecord(rhAttrmet) != REM_FSEOF ){
+
+		rc = rhAttrmet.GetData(pDataAttrmet);
+		if (rc != OK) {return rc; }
+
+		char *attrmetRecord = (char *)malloc(strlen(pDataAttrmet));
+		strcpy(attrmetRecord,pDataAttrmet);
+
+		rc = GetAttrInfoJoin(attrmetRecord,attrName,offsetAttrmet,typeAttrmet,sizeAttrmet,indexIDAttrmet);
+		if (rc != OK) {return rc; }
+
+		if( strcmp(attrName,connectionAttribute) != 0 ){
+
+			char *singleAttrInfo;
+			if( strcmp(typeAttrmet,"TYPE_INT") == 0 ){
+				int signleLength = strlen(attrName)+4;
+				singleAttrInfo = (char *)malloc(signleLength);
+				strcpy(singleAttrInfo,attrName);
+				strcat(singleAttrInfo," INT");
+				sumOfSingleLength += signleLength+1;
+			}
+			else{
+				int signleLength = strlen(attrName)+7+strlen(sizeAttrmet);
+				singleAttrInfo = (char *)malloc(signleLength);
+				strcpy(singleAttrInfo,attrName);
+				strcat(singleAttrInfo," CHAR(");
+				strcat(singleAttrInfo,sizeAttrmet);
+				strcat(singleAttrInfo,")");
+				sumOfSingleLength += signleLength+1;
+			}
+			allAttrInfo.push_back(singleAttrInfo);
+		}
+	}
+	tableDefinition = (char *)malloc(sumOfSingleLength);
+	for( int v = 0; v < (int) allAttrInfo.size(); v++ ){
+			if( v == 0 )
+				strcpy(tableDefinition,allAttrInfo[v]);
+			else
+				strcat(tableDefinition,allAttrInfo[v]);
+			if( v != (int) allAttrInfo.size()-1 )
+				strcat(tableDefinition,", ");
+		}
 
 	return OK;
 }

@@ -68,28 +68,32 @@ bool SYSM_DatabaseManager::isOpen(){
 
 
 t_rc SYSM_DatabaseManager::DropDatabase (const char *dbName){
-	ifstream myfile;
-	int i=0;
-	char relpath[260];
-	char attrpath[260];
-	char tablename[255];
-	char deletename[255];
-	const char *name;
-	_snprintf_s(relpath,sizeof(relpath),"%s/rel.met",dbName);
-	_snprintf_s(attrpath, sizeof(attrpath), "%s/attr.met",dbName);
-	myfile.open(relpath);
-	while (myfile.getline(tablename,255)){
-		while (tablename[i]!=' ' && tablename[i]!='\0') {
-			i++;
-		}
-		tablename[i]='\0';
-		name=tablename;
-		_snprintf_s(deletename,sizeof(deletename),"%s/%s",dbName,name);
-		remove(deletename);
-		remove(relpath);
-		remove(attrpath);
-		getchar();
-		rmdir(dbName);
-	}
+	// ifstream myfile;
+	// int i=0;
+	// char relpath[260];
+	// char attrpath[260];
+	// char tablename[255];
+	// char deletename[255];
+	// const char *name;
+	// _snprintf_s(relpath,sizeof(relpath),"%s/rel.met",dbName);
+	// _snprintf_s(attrpath, sizeof(attrpath), "%s/attr.met",dbName);
+	// myfile.open(relpath);
+	// while (myfile.getline(tablename,255)){
+	// 	while (tablename[i]!=' ' && tablename[i]!='\0') {
+	// 		i++;
+	// 	}
+	// 	tablename[i]='\0';
+	// 	name=tablename;
+	// 	_snprintf_s(deletename,sizeof(deletename),"%s/%s",dbName,name);
+	// 	remove(deletename);
+	// 	remove(relpath);
+	// 	remove(attrpath);
+	// 	getchar();
+	// 	rmdir(dbName);
+	// }
+	char dir[200];
+	strcpy (dir,"rmdir /S /Q /Data/");
+	strcpy (dir, dbName);
+	system (dir);
 	return OK;
 }

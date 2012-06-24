@@ -3,6 +3,7 @@
 
 #include "REM.h"
 #include "INXM.h"
+#include "SYSM.h"
 #include "retcodes.h"
 
 class SSQLM_DML_Manager {
@@ -18,11 +19,15 @@ private:
 	t_rc OpenRelmet(char *dbName);
 	t_rc OpenAttrmet(char *dbName);
 
-	t_rc GetAttrInfo(char *rec, int &offset, char *&type, int &size, int &indexID);	//Retrieve attribute info
+	t_rc GetAttrInfo(char *rec, int &offset, char *&type, int &size, int &indexID);
+	t_rc GetAttrInfoJoin(char *rec, char *&attrName, int &offset, char *&type, char *&size, int &indexID);
 	t_rc GetConditionInfo(char *condition, char *&conditionAttribute, t_compOp &comp, char *&conditionValue);
 	t_rc FindAttributeInAttrmet(const char *tName, char *attributeName, int &offset, char *&type, int &size, int &indexID);
 	t_rc CheckIfTableHasIndexes(const char *tName,bool &hasIndexes);
 	t_rc GetTableRecordSize(char *tName, int &recordSize);
+	t_rc ConCatRecords(REM_RecordID rid, REM_RecordFileHandle *rfh, REM_RecordHandle *rh, int offset, int size, int recordSize, char *firstRecord, char *&newRecord);
+	t_rc RebuildTableDefinition(char *tName, char *&tableDefinition);
+	t_rc RebuildTableDefinitionChopped(char *tName, char *&tableDefinition, char *connectionAttribute);
 
 public:
 
