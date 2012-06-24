@@ -264,8 +264,6 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, vector<char *
 
 		remrh->GetData(pdata);
 
-		cout<<"AAAAAAAAAAAAAAAA  "<<pdata<<"  AAAAAAAAAA"<<endl;
-
 		int pDataLength = strlen(pdata);
 		char * newInput;
 		newInput = (char *)malloc(pDataLength);
@@ -282,28 +280,25 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, vector<char *
 																											//	8a psaksoume to attribute tou ka8e condition sto arxeio attrmet
 //																											//	wste na paroume plhrofories gia to attribute (offset,type,...)
 		int offset2,size2,indexID2;																			//	me teliko stoxo na elegksoume poia apo ta records pou epestrepsan
-		char *type2;																							//	oi indexers, epalh8euoun ta conditions xwris index.
+		char *type2;																						//	oi indexers, epalh8euoun ta conditions xwris index.
 
-		for(int i=0; i< (int) conditionsListWithoutIndex.size(); i++){											//	Gia ka8e tetoio condition loipon,
+		for(int i=0; i< (int) conditionsListWithoutIndex.size(); i++){										//	Gia ka8e tetoio condition loipon,
 
 			rc = GetConditionInfo(conditionsListWithoutIndex[i],conditionAttribute,comp,conditionValue);	//	vres ta systatika tou merh (attribute, comperator, value)
 			if (rc != OK) {return rc; }	
 
-			rc = FindAttributeInAttrmet(tName,conditionAttribute,offset2,type2,size2,indexID2);						//	kai psakse mesa sto attrmet to record gia to sygkekrimeno attribute. Pare tis plhrofories gia to attribute.
+			rc = FindAttributeInAttrmet(tName,conditionAttribute,offset2,type2,size2,indexID2);				//	kai psakse mesa sto attrmet to record gia to sygkekrimeno attribute. Pare tis plhrofories gia to attribute.
 			if (rc != OK) {return rc; }	
 
 			int j = 0;
 			if(!recordsFromIndexes.empty()){
-				for(int j=0; j<(int)recordsFromIndexes.size(); j++){											//	Sygkrine an isxyei h syn8hkh me ola ta records pou epestrepsan oi indexes.
-				//for ( ridsToRecords_Iter = ridsToRecords.begin( ); ridsToRecords_Iter != ridsToRecords.end( ); ridsToRecords_Iter++ ){	
-					
+				for(int j=0; j<(int)recordsFromIndexes.size(); j++){										//	Sygkrine an isxyei h syn8hkh me ola ta records pou epestrepsan oi indexes.	
 					
 					char *value;																			//	Ean h syn8hkh epalh8euetai, pros8ese to record sthn lista eksodou finalResultRecords.
 					value = (char *)malloc(size);
 					int z;
 					for(z=0; z<size; z++){
 						value[z] = recordsFromIndexes[j][offset+z];
-						//value[z] = ridsToRecords_Iter->second[offset+z];
 					}
 					value[z] = '\0';
 					if(strstr(type,"TYPE_INT")){
@@ -386,7 +381,7 @@ t_rc SSQLM_DML_Manager::Where(const char *tName, char *conditions, vector<char *
 					int atoiCondition = atoi(conditionValue);
 					int *key = new int(atoiCondition);
 
-					rc = remrfs->OpenRecordScan(*remrfh2,TYPE_INT,size,offset,comp,key);	// DEN EPISTREFEI SWSTA APOTELESMATA. PX id<2 TA EPISTREFEI OLA.
+					rc = remrfs->OpenRecordScan(*remrfh2,TYPE_INT,size,offset,comp,key);	
 					if (rc != OK) {return rc; }
 				}
 				else{
@@ -452,7 +447,7 @@ t_rc SSQLM_DML_Manager::Select(const char *tName, vector<char *> columns, vector
 		int offset, size, indexID;
 		char *type;
 
-		for(int n = 0; n < (int)columns.size(); n++) {									//	Gia ka8e column
+		for(int n = 0; n < (int)columns.size(); n++) {								//	Gia ka8e column
 			vector<char *> tempList;												//	ftiaxnw thn lista me ta dedomena apo to ka8e record.
 
 			t_rc rc = FindAttributeInAttrmet(tName,columns[n],offset,type,size,indexID);	//	Vriskw to offset tou column
